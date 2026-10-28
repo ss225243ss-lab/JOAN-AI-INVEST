@@ -18,7 +18,7 @@
 <div class="mini-grid"><div>融資 <b id="homeMargin">—</b></div><div>融券 <b id="homeShort">—</b></div></div><div class="small" id="homeMarginDate"></div>
 </div></div><div class="quote"><div class="small">台指期 TX｜日盤近月</div><div class="metric" id="txValue">—</div><div class="small" id="txMove">尚未取得</div></div></div>
 <div class="panel"><div class="between"><div class="title">加權指數 K 線</div><div class="controls"><select id="period" onchange="render()"><option value="day">日 K</option><option value="week">週 K</option><option value="month">月 K</option></select><button onclick="zoom(-1)">＋ 放大</button><button onclick="zoom(1)">－ 縮小</button><button onclick="moveHistory(-1)">← 往前</button><button onclick="moveHistory(1)">往後 →</button><button onclick="showAllHistory()">全部歷史</button></div></div>
-<div class="small" id="chartLabel">尚無官方 OHLC 資料</div><div class="controls" style="margin:8px 0"><label class="small" for="historyPosition">拖曳時間軸查看更早的 K 線</label><input id="historyPosition" type="range" min="0" max="0" value="0" oninput="seekHistory(this.value)" style="flex:1;min-width:160px"><span class="small" id="rangeLabel">—</span></div><div class="small">K 棒上方：連漲／連跌天數與 MA20（月線）轉向；週／月 K 以各週期連續根數計算</div><svg id="candleChart" viewBox="0 0 1000 390" aria-label="加權指數 K 線圖"></svg>
+<div class="small" id="chartLabel">尚無官方 OHLC 資料</div><div class="controls" style="margin:8px 0"><label class="small" for="historyPosition">拖曳時間軸查看更早的 K 線</label><input id="historyPosition" type="range" min="0" max="0" value="0" oninput="seekHistory(this.value)" style="flex:1;min-width:160px"><span class="small" id="rangeLabel">—</span></div><div class="small">K 棒上方：連漲／連跌滿 3 根起標記天數與 MA20（月線）轉向；週／月 K 以各週期連續根數計算</div><svg id="candleChart" viewBox="0 0 1000 390" aria-label="加權指數 K 線圖"></svg>
 <div class="legend"><span style="--c:#c83847">上漲</span><span style="--c:#138260">下跌</span><span style="--c:#2c73cb">MA20</span><span style="--c:#d49a2b">MA60</span><span style="--c:#935fba">MA240</span></div></div>
 <div class="panel"><div class="between"><div class="title">KD（9,3,3）</div><div class="small" id="kdLatest">等待計算</div></div><svg id="kdChart" viewBox="0 0 1000 220" aria-label="KD 指標圖"></svg><div class="legend"><span style="--c:#2c73cb">K</span><span style="--c:#d49a2b">D</span><span style="--c:#fff0f2">80 以上偏熱（紅色區）</span><span style="--c:#eaf4ff">20 以下偏冷（藍色區）</span></div></div>
 <div class="panel"><div class="between"><div class="title">融資／融券｜每日增減</div><button onclick="loadMargin()">重新讀取</button></div><div class="quotes" style="margin-top:12px"><div class="quote"><div class="small">融資增減（交易單位）</div><div class="metric" id="marginUnits">—</div></div><div class="quote"><div class="small">融券增減（交易單位）</div><div class="metric" id="shortUnits">—</div></div></div><div class="small" id="marginDate">尚未取得</div><details><summary>展開融資融券歷史紀錄</summary><div class="tablebox"><table><thead><tr><th>日期</th><th>融資增減</th><th>融券增減</th></tr></thead><tbody id="marginHistory"></tbody></table></div></details></div>
@@ -77,9 +77,9 @@ function chartK(data){
  const y=v=>B-(v-min)/(max-min)*(B-T),x=i=>L+(i+.5)*(R-L)/bars.length,w=Math.max(2,(R-L)/bars.length*.65);
  for(let t=0;t<=4;t++){const val=min+(max-min)*t/4,Y=y(val);svg('line',{x1:L,y1:Y,x2:R,y2:Y,stroke:'#e9eef5'},root);text(root,L-8,Y+4,f(val,0),'end')}
  bars.forEach((r,i)=>{const X=x(i),c=r.close>=r.open?'#c83847':'#138260';svg('line',{x1:X,y1:y(r.high),x2:X,y2:y(r.low),stroke:c,'stroke-width':1.4},root);svg('rect',{x:X-w/2,y:Math.min(y(r.open),y(r.close)),width:w,height:Math.max(1,Math.abs(y(r.open)-y(r.close))),fill:c},root);
- const fullIndex=data.length-bars.length+i,prev=data[fullIndex-1],prev2=data[fullIndex-2];
+ const fullIndex=end-bars.length+i,prev=data[fullIndex-1],prev2=data[fullIndex-2];
  let streak=0;
- if(prev){const dir=Math.sign(r.close-prev.close);if(dir){let j=fullIndex;while(j>0&&Math.sign(data[j].close-data[j-1].close)===dir){streak++;j--}if(streak>=2){text(root,X,Math.max(13,y(r.high)-17),String(streak), 'middle',dir>0?'#c83847':'#138260',Math.max(9,Math.min(12,w*.7)))}}}
+ if(prev){const dir=Math.sign(r.close-prev.close);if(dir){let j=fullIndex;while(j>0&&Math.sign(data[j].close-data[j-1].close)===dir){streak++;j--}if(streak>=3){text(root,X,Math.max(13,y(r.high)-17),String(streak), 'middle',dir>0?'#c83847':'#138260',Math.max(9,Math.min(12,w*.7)))}}}
  if(Number.isFinite(r.ma20)&&prev&&Number.isFinite(prev.ma20)&&prev2&&Number.isFinite(prev2.ma20)){
  const before=Math.sign(prev.ma20-prev2.ma20),now=Math.sign(r.ma20-prev.ma20);
  if(before<=0&&now>0)text(root,X,Math.max(10,y(r.high)-31),'月↑','middle','#b87511',11);
@@ -203,5 +203,25 @@ async function loadInstitutions(){
  $('instDate').textContent='資料日 '+r.date+'｜證交所 BFI82U';
  }catch(e){$('instDate').textContent='尚未取得官方三大法人資料：'+e.message}
 }
+
+// Mouse-wheel zoom on K chart: wheel up zooms in, wheel down zooms out.
+// Prevent page scrolling only while the pointer is over the candlestick chart.
+$('candleChart').addEventListener('wheel',function(event){
+ if(!series.length)return;
+ event.preventDefault();
+ const oldCount=windowCount;
+ const end=windowEnd===null?series.length:Math.min(series.length,windowEnd);
+ const rect=this.getBoundingClientRect();
+ const ratio=Math.max(0,Math.min(1,(event.clientX-rect.left)/Math.max(1,rect.width)));
+ const anchor=Math.max(0,end-oldCount)+ratio*oldCount;
+ const delta=event.deltaY<0?-1:1;
+ const next=Math.max(10,Math.min(series.length,Math.round(oldCount*(delta<0?0.82:1.22))));
+ if(next===oldCount)return;
+ windowCount=next;
+ const newStart=Math.max(0,Math.min(series.length-next,Math.round(anchor-ratio*next)));
+ windowEnd=newStart+next;
+ render();
+},{passive:false});
+
 fetchOfficial();loadMargin();loadTaifex();loadInstitutions();
 </script></body></html>
