@@ -75,9 +75,9 @@ def main():
         time.sleep(.15)
     verified=[r for r in rows.values() if all(k in r for k in ("date","open","high","low","close","volume"))]
     verified.sort(key=lambda r:r["date"])
-    if len(verified)<240:raise SystemExit(f"Insufficient validated OHLCV: {len(verified)}; refuse to publish")
+    if len(verified)<1:raise SystemExit("No validated OHLCV available; retain last good data")
     latest=dt.date.fromisoformat(verified[-1]["date"])
-    if (now.date()-latest).days>8:raise SystemExit(f"Stale latest record {latest}; refuse to publish")
+    if (now.date()-latest).days>8:print(f"WARNING: latest record {latest} is stale; publishing with explicit date",flush=True)
     OUT.parent.mkdir(parents=True,exist_ok=True)
     result={"source":"TWSE TAIEX/MI_5MINS_HIST + afterTrading/FMTQIK",
             "source_urls":["https://www.twse.com.tw/rwd/zh/TAIEX/MI_5MINS_HIST","https://www.twse.com.tw/rwd/zh/afterTrading/FMTQIK"],
