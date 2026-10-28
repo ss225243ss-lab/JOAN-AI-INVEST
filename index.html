@@ -178,7 +178,7 @@ async function loadTaifex(){
 async function loadInstitutions(){
  try{
  const res=await fetch('./data/institutions.json?ts='+Date.now(),{cache:'no-store'});if(!res.ok)throw Error('官方檔案尚未產生');
- const j=await res.json(),rows=j.rows.filter(r=>/^20\\d{2}-\\d{2}-\\d{2}$/.test(r.date)&&['foreign','trust','dealer','total'].every(k=>Number.isFinite(r[k]))).sort((a,b)=>a.date.localeCompare(b.date));
+ const j=await res.json(),rows=j.rows.filter(r=>/^20\d{2}-\d{2}-\d{2}$/.test(r.date)&&['foreign','trust','dealer','total'].every(k=>Number.isFinite(r[k]))).sort((a,b)=>a.date.localeCompare(b.date));
  if(!rows.length)throw Error('尚無完整官方資料');
  const r=rows.at(-1);
  for(const [id,key] of [['instForeign','foreign'],['instTrust','trust'],['instDealer','dealer'],['instTotal','total']]){
