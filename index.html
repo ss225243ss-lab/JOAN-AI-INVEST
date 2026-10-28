@@ -1,4 +1,15 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>JOAN AI INVEST</title><style>:root{font-family:system-ui,'Microsoft JhengHei',sans-serif;color:#182438;background:#f3f6fa}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1180px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.brand{font-size:25px;font-weight:800;letter-spacing:.5px}.muted{color:#728096;font-size:13px}.pill{background:#fff1d6;color:#865c11;padding:6px 10px;border-radius:30px;font-size:12px}nav{display:flex;gap:8px;margin:22px 0}button,select,input{font:inherit}button,select{border:1px solid #dbe3ee;background:#fff;border-radius:10px;padding:9px 13px;cursor:pointer;color:#233247}button.active{background:#2458b7;color:white;border-color:#2458b7}.panel{background:white;border:1px solid #e1e8f0;border-radius:16px;padding:18px;margin-bottom:15px;box-shadow:0 5px 20px #14274408}.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.between{justify-content:space-between}.title{font-size:19px;font-weight:750;margin:0 0 7px}.metric{font-size:27px;font-weight:750}.quotes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.quote{border:1px solid #e1e8f0;border-radius:13px;padding:15px;background:#fff}.quote .metric{margin:5px 0}.quote .muted{font-size:12px}@media(max-width:520px){.quotes{grid-template-columns:1fr}}.red{color:#d34d57}.green{color:#178b65}.blue{color:#286bd1}.small{font-size:12px}.chart{width:100%;display:block}.hidden{display:none!important}.tablebox{overflow:auto}table{border-collapse:collapse;width:100%;white-space:nowrap;font-size:13px}th,td{padding:12px 10px;border-bottom:1px solid #edf0f5;text-align:right}th:first-child,td:first-child{text-align:left}th{background:#f7f9fc;color:#59677d;position:sticky;top:0}sup{font-size:10px;margin-left:2px}input[type=file]{max-width:100%}.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.note{background:#fff7e7;border-radius:9px;padding:10px 12px;color:#805a20;font-size:12px;margin:10px 0}.legend{display:flex;gap:15px;flex-wrap:wrap;font-size:12px;color:#6a7789}.line{display:inline-block;width:15px;height:3px;vertical-align:middle;margin-right:4px}.footer{font-size:12px;color:#7a8798;margin:20px 0}@media(max-width:600px){.wrap{padding:12px}.panel{padding:13px}.brand{font-size:21px}button,select{padding:8px}.metric{font-size:23px}}</style></head><body><main class="wrap"><header class="top"><div><div class="brand">JOAN AI INVEST</div><div class="muted">個人投資研究工作台 · V0.4</div></div><span class="pill" id="status">示意資料｜可查詢官方大盤日資料</span></header><nav><button id="nav1" class="active" onclick="page(1)">① K 線技術分析</button><button id="nav2" onclick="page(2)">② 大盤歷史紀錄</button></nav><section id="page1"><div class="panel"><div class="row between"><div><b>官方資料查詢與技術事件</b><div class="muted">查詢證交所加權指數歷史收盤資料並檢查收盤均線事件；台指期尚未串接</div></div><button onclick="fetchOfficial()">更新官方大盤與均線訊號</button></div><div class="small" id="officialInfo" style="margin-top:9px">尚未查詢</div><div class="row" style="margin-top:10px"><button onclick="enableAlerts()" id="alertBtn">啟用頁面內事件提醒</button><span class="muted">只依官方已公布收盤資料；不會背景推播</span></div><div id="alertLog" class="small" style="margin-top:9px"></div><div class="small" id="eventHistory" style="margin-top:8px"></div></div><section class="panel" id="marginPanel">
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>JOAN AI INVEST</title><style>:root{font-family:system-ui,'Microsoft JhengHei',sans-serif;color:#182438;background:#f3f6fa}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1180px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.brand{font-size:25px;font-weight:800;letter-spacing:.5px}.muted{color:#728096;font-size:13px}.pill{background:#fff1d6;color:#865c11;padding:6px 10px;border-radius:30px;font-size:12px}nav{display:flex;gap:8px;margin:22px 0}button,select,input{font:inherit}button,select{border:1px solid #dbe3ee;background:#fff;border-radius:10px;padding:9px 13px;cursor:pointer;color:#233247}button.active{background:#2458b7;color:white;border-color:#2458b7}.panel{background:white;border:1px solid #e1e8f0;border-radius:16px;padding:18px;margin-bottom:15px;box-shadow:0 5px 20px #14274408}.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.between{justify-content:space-between}.title{font-size:19px;font-weight:750;margin:0 0 7px}.metric{font-size:27px;font-weight:750}.quotes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.quote{border:1px solid #e1e8f0;border-radius:13px;padding:15px;background:#fff}.quote .metric{margin:5px 0}.quote .muted{font-size:12px}@media(max-width:520px){.quotes{grid-template-columns:1fr}}.red{color:#d34d57}.green{color:#178b65}.blue{color:#286bd1}.small{font-size:12px}.chart{width:100%;display:block}.hidden{display:none!important}.tablebox{overflow:auto}table{border-collapse:collapse;width:100%;white-space:nowrap;font-size:13px}th,td{padding:12px 10px;border-bottom:1px solid #edf0f5;text-align:right}th:first-child,td:first-child{text-align:left}th{background:#f7f9fc;color:#59677d;position:sticky;top:0}sup{font-size:10px;margin-left:2px}input[type=file]{max-width:100%}.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.note{background:#fff7e7;border-radius:9px;padding:10px 12px;color:#805a20;font-size:12px;margin:10px 0}.legend{display:flex;gap:15px;flex-wrap:wrap;font-size:12px;color:#6a7789}.line{display:inline-block;width:15px;height:3px;vertical-align:middle;margin-right:4px}.footer{font-size:12px;color:#7a8798;margin:20px 0}@media(max-width:600px){.wrap{padding:12px}.panel{padding:13px}.brand{font-size:21px}button,select{padding:8px}.metric{font-size:23px}}</style></head><body><main class="wrap"><header class="top"><div><div class="brand">JOAN AI INVEST</div><div class="muted">個人投資研究工作台 · V0.4</div></div><span class="pill" id="status">示意資料｜可查詢官方大盤日資料</span></header><nav><button id="nav1" class="active" onclick="page(1)">① K 線技術分析</button><button id="nav2" onclick="page(2)">② 大盤歷史紀錄</button></nav><section id="page1"><div class="panel"><div class="row between"><div><b>官方資料查詢與技術事件</b><div class="muted">查詢證交所加權指數歷史收盤資料並檢查收盤均線事件；台指期尚未串接</div></div><button onclick="fetchOfficial()">更新官方大盤與均線訊號</button></div><div class="small" id="officialInfo" style="margin-top:9px">尚未查詢</div><div class="row" style="margin-top:10px"><button onclick="enableAlerts()" id="alertBtn">啟用頁面內事件提醒</button><span class="muted">只依官方已公布收盤資料；不會背景推播</span></div><div id="alertLog" class="small" style="margin-top:9px"></div><div class="small" id="eventHistory" style="margin-top:8px"></div></div><section class="panel" id="taifexPanel">
+<div class="row between"><div><div class="title">臺股期貨 TX｜期交所官方行情</div>
+<div class="muted">近月實際契約｜日盤、夜盤分開｜非即時報價</div></div>
+<button onclick="loadTaifex()">更新台指期官方資料</button></div>
+<div class="quotes" style="margin-top:12px">
+<div class="quote"><div class="muted">TX 近月｜一般交易時段</div><div class="metric" id="txDayLast">—</div><div id="txDayDate" class="small muted">等待官方資料</div><div id="txDayDetail" class="small muted"></div></div>
+<div class="quote"><div class="muted">TX 近月｜盤後交易時段</div><div class="metric" id="txNightLast">—</div><div id="txNightDate" class="small muted">等待官方資料</div><div id="txNightDetail" class="small muted"></div></div></div>
+<div class="note" id="txNotice">本區不提供盤中即時報價。夜盤採期交所「交易日期」標記；日盤與夜盤不是同一根 K 棒。不同到期月份不自動拼接成未註明的連續合約。</div>
+<div class="small muted" id="txSourceStatus">尚未取得官方行情檔</div>
+<div class="tablebox" style="margin-top:12px"><table><thead><tr><th>日期</th><th>時段</th><th>合約月份</th><th>開盤</th><th>最高</th><th>最低</th><th>最後成交</th><th>成交量</th><th>未平倉</th></tr></thead><tbody id="txHistoryRows"><tr><td colspan="9">等待官方資料</td></tr></tbody></table></div>
+<div class="footer">資料來源：<a href="https://openapi.taifex.com.tw/" target="_blank" rel="noopener noreferrer">臺灣期貨交易所 OpenAPI</a>，資料以原始到期月份保存，保留日盤及夜盤。</div>
+</section><section class="panel" id="marginPanel">
  <div class="row between"><div><div class="title">融資融券｜證交所官方資料</div><div class="muted">上市市場信用交易統計，非台指期數據｜收盤後公布，資料可能修正</div></div>
  <button onclick="loadMargin()">重新檢查資料</button></div>
  <div class="quotes" style="margin-top:12px">
@@ -157,4 +168,48 @@ async function loadMargin(){
  }
 }
 loadMargin();
+</script><script>
+async function loadTaifex(){
+ const $=id=>document.getElementById(id),f=n=>Number.isFinite(n)?n.toLocaleString('zh-TW',{maximumFractionDigits:2}):'—';
+ $('txSourceStatus').textContent='正在載入期交所資料…';
+ try{
+  const res=await fetch('./data/taifex_tx.json?t='+Date.now(),{cache:'no-store'});
+  if(!res.ok)throw Error('官方 TX 資料檔尚未建立（HTTP '+res.status+'）');
+  const obj=await res.json();
+  if(!Array.isArray(obj.rows))throw Error('TX 資料格式異常');
+  const valid=obj.rows.filter(r=>r.contract==='TX' && /^20\d{4}$/.test(r.month) && /^20\d{2}-\d{2}-\d{2}$/.test(r.date) && ['day','night'].includes(r.session) && Number.isFinite(r.last) && r.last>0);
+  if(!valid.length)throw Error('沒有已驗證的 TX 合約行情');
+  valid.sort((a,b)=>a.date.localeCompare(b.date)||a.month.localeCompare(b.month));
+  const near=valid.filter(r=>r.month===valid.filter(x=>x.date===r.date&&x.session===r.session).map(x=>x.month).sort()[0]);
+  function show(session,prefix){
+   const selected=near.filter(r=>r.session===session).sort((a,b)=>a.date.localeCompare(b.date));
+   const r=selected.at(-1);
+   if(!r){$(prefix+'Last').textContent='—';$(prefix+'Date').textContent='尚無此時段官方資料';return;}
+   $(prefix+'Last').textContent=f(r.last);
+   $(prefix+'Date').textContent=r.date+'｜'+r.month+' 合約｜'+(session==='day'?'日盤':'夜盤');
+   $(prefix+'Detail').textContent='開 '+f(r.open)+'｜高 '+f(r.high)+'｜低 '+f(r.low)+'｜量 '+f(r.volume)+'｜未平倉 '+f(r.open_interest);
+  }
+  show('day','txDay');show('night','txNight');
+  const lastDay=near.filter(r=>r.session==='day').at(-1);
+  const latest=near.at(-1);
+  $('txValue').textContent=lastDay?f(lastDay.last):'—';
+  $('txMove').textContent=lastDay?'官方日盤 '+lastDay.date+'｜'+lastDay.month+'｜非即時':'尚無官方日盤';
+  $('txSourceStatus').textContent='期交所官方快照，共 '+valid.length+' 筆｜最後交易日期 '+latest.date+'｜資料建立時間 '+(obj.generated_at||'未標示');
+  $('txHistoryRows').replaceChildren();
+  for(const r of near.slice(-60).reverse()){
+   const tr=document.createElement('tr');
+   for(const v of [r.date,r.session==='day'?'日盤':'夜盤',r.month,f(r.open),f(r.high),f(r.low),f(r.last),f(r.volume),f(r.open_interest)]){
+    const td=document.createElement('td');td.textContent=v;tr.appendChild(td);
+   }
+   $('txHistoryRows').appendChild(tr);
+  }
+ }catch(e){
+  $('txSourceStatus').textContent='尚未更新：'+e.message;
+  $('txValue').textContent='—';$('txMove').textContent='待取得官方台指期數據';
+  $('txDayLast').textContent='—';$('txNightLast').textContent='—';
+  $('txDayDate').textContent='尚無已驗證資料';$('txNightDate').textContent='尚無已驗證資料';
+  $('txHistoryRows').innerHTML='<tr><td colspan="9">無法取得官方 TX 日盤／夜盤資料，不顯示示意行情。</td></tr>';
+ }
+}
+loadTaifex();
 </script></body></html>
