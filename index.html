@@ -16,8 +16,8 @@
 <div class="small" style="font-weight:700;margin-top:10px">融資／融券今日增減（交易單位）</div>
 <div class="mini-grid"><div>融資 <b id="homeMargin">—</b></div><div>融券 <b id="homeShort">—</b></div></div><div class="small" id="homeMarginDate"></div>
 </div></div><div class="quote"><div class="small">台指期 TX｜日盤近月</div><div class="metric" id="txValue">—</div><div class="small" id="txMove">尚未取得</div></div></div>
-<div class="panel"><div class="between"><div class="title">加權指數 K 線</div><div class="controls"><select id="period" onchange="render()"><option value="day">日 K</option><option value="week">週 K</option><option value="month">月 K</option></select><button onclick="zoom(-1)">＋ 放大</button><button onclick="zoom(1)">－ 縮小</button></div></div>
-<div class="small" id="chartLabel">尚無官方 OHLC 資料</div><div class="small">K 棒上方：連漲／連跌天數與 MA20（月線）轉向；週／月 K 以各週期連續根數計算</div><svg id="candleChart" viewBox="0 0 1000 390" aria-label="加權指數 K 線圖"></svg>
+<div class="panel"><div class="between"><div class="title">加權指數 K 線</div><div class="controls"><select id="period" onchange="render()"><option value="day">日 K</option><option value="week">週 K</option><option value="month">月 K</option></select><button onclick="zoom(-1)">＋ 放大</button><button onclick="zoom(1)">－ 縮小</button><button onclick="moveHistory(-1)">← 往前</button><button onclick="moveHistory(1)">往後 →</button><button onclick="showAllHistory()">全部歷史</button></div></div>
+<div class="small" id="chartLabel">尚無官方 OHLC 資料</div><div class="controls" style="margin:8px 0"><label class="small" for="historyPosition">拖曳時間軸查看更早的 K 線</label><input id="historyPosition" type="range" min="0" max="0" value="0" oninput="seekHistory(this.value)" style="flex:1;min-width:160px"><span class="small" id="rangeLabel">—</span></div><div class="small">K 棒上方：連漲／連跌天數與 MA20（月線）轉向；週／月 K 以各週期連續根數計算</div><svg id="candleChart" viewBox="0 0 1000 390" aria-label="加權指數 K 線圖"></svg>
 <div class="legend"><span style="--c:#c83847">上漲</span><span style="--c:#138260">下跌</span><span style="--c:#2c73cb">MA20</span><span style="--c:#d49a2b">MA60</span><span style="--c:#935fba">MA240</span></div></div>
 <div class="panel"><div class="between"><div class="title">KD（9,3,3）</div><div class="small" id="kdLatest">等待計算</div></div><svg id="kdChart" viewBox="0 0 1000 220" aria-label="KD 指標圖"></svg><div class="legend"><span style="--c:#2c73cb">K</span><span style="--c:#d49a2b">D</span><span style="--c:#fff0f2">80 以上偏熱（紅色區）</span><span style="--c:#eaf4ff">20 以下偏冷（藍色區）</span></div></div>
 <div class="panel"><div class="between"><div class="title">融資／融券｜每日增減</div><button onclick="loadMargin()">重新讀取</button></div><div class="quotes" style="margin-top:12px"><div class="quote"><div class="small">融資增減（交易單位）</div><div class="metric" id="marginUnits">—</div></div><div class="quote"><div class="small">融券增減（交易單位）</div><div class="metric" id="shortUnits">—</div></div></div><div class="small" id="marginDate">尚未取得</div><details><summary>展開融資融券歷史紀錄</summary><div class="tablebox"><table><thead><tr><th>日期</th><th>融資增減</th><th>融券增減</th></tr></thead><tbody id="marginHistory"></tbody></table></div></details></div>
@@ -31,12 +31,15 @@
 <script>
 const $=id=>document.getElementById(id);
 const NS='http://www.w3.org/2000/svg';
-let daily=[],period='day',windowCount=55,series=[];
+let daily=[],period='day',windowCount=55,windowEnd=null,series=[];
 const f=(v,n=2)=>Number.isFinite(v)?v.toLocaleString('zh-TW',{maximumFractionDigits:n,minimumFractionDigits:n}):'—';
 const signed=(v,n=2)=>Number.isFinite(v)?(v>0?'+':'')+f(v,n):'—';
 const col=v=>v>0?'red':v<0?'green':'';
 function page(n){$('page1').classList.toggle('hidden',n!==1);$('page2').classList.toggle('hidden',n!==2);$('nav1').classList.toggle('active',n===1);$('nav2').classList.toggle('active',n===2)}
-function zoom(d){windowCount=Math.max(18,Math.min(130,windowCount+d*12));render()}
+function zoom(d){windowCount=Math.max(10,Math.min(series.length||1300,windowCount+d*Math.max(8,Math.round(windowCount*.3))));render()}
+function moveHistory(dir){const end=windowEnd===null?series.length:windowEnd;windowEnd=Math.max(Math.min(windowCount,series.length),Math.min(series.length,end+dir*Math.max(5,Math.round(windowCount*.7))));render()}
+function seekHistory(v){windowEnd=Math.min(series.length,Math.max(windowCount,Number(v)+windowCount));render()}
+function showAllHistory(){windowCount=series.length;windowEnd=null;render()}
 function svg(tag,attrs={},parent){const e=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,v);parent.appendChild(e);return e}
 function text(parent,x,y,str,anchor='start',color='#758399',size=12){const e=svg('text',{x,y,fill:color,'font-size':size,'text-anchor':anchor,'font-family':'system-ui'},parent);e.textContent=str;return e}
 function clear(node){node.replaceChildren()}
@@ -67,7 +70,7 @@ function indicators(data){
 function chartK(data){
  const root=$('candleChart');clear(root);
  if(!data.length){text(root,500,180,'官方開高低收資料尚未取得','middle');return}
- const bars=data.slice(-windowCount),L=65,R=960,T=48,B=335;
+ const end=windowEnd===null?data.length:Math.min(data.length,Math.max(windowCount,windowEnd));const bars=data.slice(Math.max(0,end-windowCount),end),L=65,R=960,T=48,B=335;
  const nums=bars.flatMap(r=>[r.high,r.low,...[20,60,240].map(n=>r['ma'+n]).filter(Number.isFinite)]);
  let min=Math.min(...nums),max=Math.max(...nums),pad=(max-min)*.08||10;min-=pad;max+=pad;
  const y=v=>B-(v-min)/(max-min)*(B-T),x=i=>L+(i+.5)*(R-L)/bars.length,w=Math.max(2,(R-L)/bars.length*.65);
@@ -93,7 +96,7 @@ function chartK(data){
 function chartKD(data){
  const root=$('kdChart');clear(root);
  if(!data.length){text(root,500,110,'官方資料尚未取得','middle');$('kdLatest').textContent='尚無資料';return}
- const bars=data.slice(-windowCount),L=65,R=960,T=12,B=190;
+ const end=windowEnd===null?data.length:Math.min(data.length,Math.max(windowCount,windowEnd));const bars=data.slice(Math.max(0,end-windowCount),end),L=65,R=960,T=12,B=190;
  const x=i=>L+(i+.5)*(R-L)/bars.length,y=v=>B-v/100*(B-T);
  svg('rect',{x:L,y:y(100),width:R-L,height:y(80)-y(100),fill:'#fff0f2'},root);
  svg('rect',{x:L,y:y(20),width:R-L,height:y(0)-y(20),fill:'#eaf4ff'},root);
@@ -105,7 +108,19 @@ function chartKD(data){
  }
  const last=bars.at(-1);$('kdLatest').textContent='K '+f(last.k)+'｜D '+f(last.d)+'｜'+last.date;
 }
-function render(){period=$('period').value;series=indicators(aggregate(daily,period));chartK(series);chartKD(series)}
+function render(){
+ const selected=$('period').value;
+ if(period!==selected){windowEnd=null;windowCount=selected==='day'?55:selected==='week'?52:36}
+ period=selected;series=indicators(aggregate(daily,period));
+ if(!series.length){chartK(series);chartKD(series);return}
+ windowCount=Math.max(1,Math.min(windowCount,series.length));
+ const max=Math.max(0,series.length-windowCount);
+ const end=windowEnd===null?series.length:Math.min(series.length,Math.max(windowCount,windowEnd));
+ const start=end-windowCount;
+ $('historyPosition').max=String(max);$('historyPosition').value=String(start);
+ $('rangeLabel').textContent=series[start].date+' ～ '+series[end-1].date;
+ chartK(series);chartKD(series);
+}
 function showHistory(){
  const tbody=$('historyBody');clear(tbody);
  if(!daily.length){tbody.innerHTML='<tr><td colspan="13">官方歷史資料尚未建立，不能顯示模擬資料。</td></tr>';$('historyStatus').textContent='無資料';return}
