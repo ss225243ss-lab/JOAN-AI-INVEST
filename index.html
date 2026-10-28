@@ -62,4 +62,47 @@ async function fetchOfficial(){
  if(alertEnabled)checkSignals();else document.getElementById('alertLog').textContent='官方資料已更新；請按「啟用收盤事件提醒」查看當日事件。';
 }
 renderEventHistory();
-resetDemo();render();</script></body></html>
+resetDemo();render();</script><script>
+/* Official-data-only mode: never display demo prices as market quotes. */
+(function(){
+ const $=id=>document.getElementById(id);
+ $('taiexValue').textContent='載入中';$('txValue').textContent='尚未串接';
+ $('taiexMove').textContent='等待證交所官方歷史資料';$('txMove').textContent='不顯示示意價格';
+ $('status').textContent='官方資料模式｜台指期尚未串接';
+ document.querySelectorAll('.note').forEach(e=>{if(/示意|演示/.test(e.textContent))e.textContent='僅顯示已驗證官方資料；未串接的功能不提供模擬行情。'});
+ $('candleChart').style.display='none';$('kdChart').style.display='none';
+ $('chartLabel').textContent='K 線／KD：尚待串接官方 OHLC，不顯示合成 K 線';
+ $('spreadBox').style.display='none';
+ $('market').disabled=true;$('period').disabled=true;$('contract').disabled=true;
+ $('historyBody').innerHTML='<tr><td colspan="11">官方歷史資料載入中…</td></tr>';
+ $('officialInfo').textContent='讀取網站每日更新的證交所資料';
+ document.querySelector('.footer').textContent='官方資料來源：TWSE；收盤資料非即時。台指期、K 線及 KD 尚未串接，均不顯示模擬數值。';
+ window.render=function(){};window.renderQuotes=function(){};
+ window.resetDemo=function(){alert('官方資料模式不提供示意紀錄');};
+ window.fetchOfficial=async function(){
+  $('officialInfo').textContent='正在載入官方資料…';
+  try{
+   const response=await fetch('./data/taiex.json?ts='+Date.now(),{cache:'no-store'});
+   if(!response.ok)throw Error('官方資料檔尚未建立（HTTP '+response.status+'）');
+   const data=await response.json(),rows=data.rows;
+   if(!Array.isArray(rows)||rows.length<240)throw Error('歷史資料不足 240 日');
+   officialDaily=rows;officialFetched=true;
+   history=rows.map(r=>({date:r.date,close:r.close,volume:r.volume,foreign:NaN,trust:NaN,dealer:NaN}));
+   renderHistory();
+   const last=rows[rows.length-1],prev=rows[rows.length-2],diff=last.close-prev.close,pct=diff/prev.close*100;
+   $('taiexValue').textContent=fmt(last.close,2);
+   $('taiexMove').textContent=sign(diff)+fmt(diff,2)+' 點（'+sign(pct)+fmt(pct,2)+'%）｜'+last.date;
+   $('taiexMove').className='small '+color(diff);
+   $('status').textContent='TWSE 官方收盤｜資料日 '+last.date;
+   $('officialInfo').textContent='證交所官方資料 '+rows.length+' 日｜最後資料日 '+last.date+'｜更新檔建立時間 '+data.generated_at+'（UTC）';
+   if(alertEnabled)checkSignals();
+  }catch(e){
+   officialFetched=false;history=[];
+   $('taiexValue').textContent='未更新';
+   $('historyBody').innerHTML='<tr><td colspan="11">尚無可驗證官方資料，請等待自動更新完成。</td></tr>';
+   $('officialInfo').textContent='無法載入：'+e.message;
+  }
+ };
+ window.fetchOfficial();
+})();
+</script></body></html>
