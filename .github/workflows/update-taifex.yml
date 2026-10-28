@@ -1,0 +1,35 @@
+name: Update official TAIFEX TX day and night
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/update_taifex.py'
+      - '.github/workflows/update-taifex.yml'
+  schedule:
+    - cron: '30 9 * * 1-5'
+    - cron: '30 22 * * 0-4'
+permissions:
+  contents: write
+concurrency:
+  group: official-market-data
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch and validate official TX data
+        run: python scripts/update_taifex.py
+      - name: Commit official TX snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/taifex_tx.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update official TAIFEX TX session history"
+            git pull --rebase
+            git push
+          fi
