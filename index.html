@@ -2,17 +2,24 @@
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>JOAN AI INVEST｜官方大盤研究</title>
 <style>
-:root{font-family:system-ui,"Microsoft JhengHei",sans-serif;color:#172439;background:#f3f6fa}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1120px;margin:auto;padding:18px}.top,.between,.controls{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.brand{font-size:25px;font-weight:800}.muted,.small{color:#6d7c90;font-size:12px}.panel,.quote{background:white;border:1px solid #e0e7f0;border-radius:14px;padding:16px;margin:12px 0}.quotes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.quotes .quote{margin:0}.metric{font-size:29px;font-weight:750;margin:7px 0}.title{font-size:19px;font-weight:750}.red{color:#c83847}.green{color:#138260}.blue{color:#2767b4}.warn{color:#936219}.note{font-size:12px;color:#76531e;background:#fff8e8;border-radius:8px;padding:10px;margin:10px 0}button,select{border:1px solid #dce4ef;background:white;border-radius:9px;padding:9px 12px;color:#1d344d;cursor:pointer;font:inherit}button.active{background:#2866bd;color:white}.hidden{display:none!important}nav{display:flex;gap:9px;margin:18px 0}svg{width:100%;display:block}table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}th,td{text-align:right;padding:10px 9px;border-bottom:1px solid #edf1f5}th:first-child,td:first-child{text-align:left}th{background:#f7f9fc}.tablebox{overflow:auto}details{margin-top:12px}summary{cursor:pointer;color:#2767b4}.legend{display:flex;gap:15px;font-size:12px;flex-wrap:wrap}.legend span:before{content:"";display:inline-block;width:14px;height:3px;background:var(--c);vertical-align:middle;margin-right:5px}.footer{font-size:12px;color:#738094;margin:22px 0}@media(max-width:550px){.wrap{padding:10px}.panel{padding:12px}.brand{font-size:22px}.metric{font-size:24px}button,select{padding:8px}.quotes{gap:8px}}
+:root{font-family:system-ui,"Microsoft JhengHei",sans-serif;color:#172439;background:#f3f6fa}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1120px;margin:auto;padding:18px}.top,.between,.controls{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.brand{font-size:25px;font-weight:800}.muted,.small{color:#6d7c90;font-size:12px}.panel,.quote{background:white;border:1px solid #e0e7f0;border-radius:14px;padding:16px;margin:12px 0}.mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:7px;font-size:13px}.mini-grid div{display:flex;justify-content:space-between;gap:6px;padding:7px 8px;background:#f7f9fc;border-radius:7px}.mini-grid b{font-variant-numeric:tabular-nums}.quotes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.quotes .quote{margin:0}.metric{font-size:29px;font-weight:750;margin:7px 0}.title{font-size:19px;font-weight:750}.red{color:#c83847}.green{color:#138260}.blue{color:#2767b4}.warn{color:#936219}.note{font-size:12px;color:#76531e;background:#fff8e8;border-radius:8px;padding:10px;margin:10px 0}button,select{border:1px solid #dce4ef;background:white;border-radius:9px;padding:9px 12px;color:#1d344d;cursor:pointer;font:inherit}button.active{background:#2866bd;color:white}.hidden{display:none!important}nav{display:flex;gap:9px;margin:18px 0}svg{width:100%;display:block}table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}th,td{text-align:right;padding:10px 9px;border-bottom:1px solid #edf1f5}th:first-child,td:first-child{text-align:left}th{background:#f7f9fc}.tablebox{overflow:auto}details{margin-top:12px}summary{cursor:pointer;color:#2767b4}.legend{display:flex;gap:15px;font-size:12px;flex-wrap:wrap}.legend span:before{content:"";display:inline-block;width:14px;height:3px;background:var(--c);vertical-align:middle;margin-right:5px}.footer{font-size:12px;color:#738094;margin:22px 0}@media(max-width:550px){.wrap{padding:10px}.panel{padding:12px}.brand{font-size:22px}.metric{font-size:24px}button,select{padding:8px}.quotes{gap:8px}}
 </style></head><body><main class="wrap">
 <header class="top"><div><div class="brand">JOAN AI INVEST</div><div class="muted">官方收盤資料 · 個人研究工作台</div></div><span class="small" id="status">正在確認官方資料</span></header>
 <nav><button id="nav1" class="active" onclick="page(1)">① K 線技術分析</button><button id="nav2" onclick="page(2)">② 大盤歷史紀錄</button></nav>
 <section id="page1">
 <div class="panel"><div class="between"><div><div class="title">加權指數｜證交所官方日資料</div><div class="small" id="officialInfo">載入中…</div></div><button onclick="fetchOfficial()">重新讀取官方資料</button></div></div>
-<div class="quotes"><div class="quote"><div class="small">加權指數收盤</div><div class="metric" id="taiexValue">—</div><div class="small" id="taiexMove">尚未取得</div></div><div class="quote"><div class="small">台指期 TX｜日盤近月</div><div class="metric" id="txValue">—</div><div class="small" id="txMove">尚未取得</div></div></div>
+<div class="quotes"><div class="quote"><div class="small">加權指數收盤</div><div class="metric" id="taiexValue">—</div><div class="small" id="taiexMove">尚未取得</div>
+<div style="border-top:1px solid #edf1f5;margin-top:12px;padding-top:10px">
+<div class="small" style="font-weight:700">三大法人買賣超（億元）</div>
+<div class="small" id="instDate">尚待官方資料</div>
+<div class="mini-grid"><div>外資 <b id="instForeign">—</b></div><div>投信 <b id="instTrust">—</b></div><div>自營商 <b id="instDealer">—</b></div><div>合計 <b id="instTotal">—</b></div></div>
+<div class="small" style="font-weight:700;margin-top:10px">融資／融券今日增減（交易單位）</div>
+<div class="mini-grid"><div>融資 <b id="homeMargin">—</b></div><div>融券 <b id="homeShort">—</b></div></div><div class="small" id="homeMarginDate"></div>
+</div></div><div class="quote"><div class="small">台指期 TX｜日盤近月</div><div class="metric" id="txValue">—</div><div class="small" id="txMove">尚未取得</div></div></div>
 <div class="panel"><div class="between"><div class="title">加權指數 K 線</div><div class="controls"><select id="period" onchange="render()"><option value="day">日 K</option><option value="week">週 K</option><option value="month">月 K</option></select><button onclick="zoom(-1)">＋ 放大</button><button onclick="zoom(1)">－ 縮小</button></div></div>
-<div class="small" id="chartLabel">尚無官方 OHLC 資料</div><svg id="candleChart" viewBox="0 0 1000 390" aria-label="加權指數 K 線圖"></svg>
+<div class="small" id="chartLabel">尚無官方 OHLC 資料</div><div class="small">K 棒上方：連漲／連跌天數與 MA20（月線）轉向；週／月 K 以各週期連續根數計算</div><svg id="candleChart" viewBox="0 0 1000 390" aria-label="加權指數 K 線圖"></svg>
 <div class="legend"><span style="--c:#c83847">上漲</span><span style="--c:#138260">下跌</span><span style="--c:#2c73cb">MA20</span><span style="--c:#d49a2b">MA60</span><span style="--c:#935fba">MA240</span></div></div>
-<div class="panel"><div class="between"><div class="title">KD（9,3,3）</div><div class="small" id="kdLatest">等待計算</div></div><svg id="kdChart" viewBox="0 0 1000 220" aria-label="KD 指標圖"></svg><div class="legend"><span style="--c:#2c73cb">K</span><span style="--c:#d49a2b">D</span></div></div>
+<div class="panel"><div class="between"><div class="title">KD（9,3,3）</div><div class="small" id="kdLatest">等待計算</div></div><svg id="kdChart" viewBox="0 0 1000 220" aria-label="KD 指標圖"></svg><div class="legend"><span style="--c:#2c73cb">K</span><span style="--c:#d49a2b">D</span><span style="--c:#fff0f2">80 以上偏熱（紅色區）</span><span style="--c:#eaf4ff">20 以下偏冷（藍色區）</span></div></div>
 <div class="panel"><div class="between"><div class="title">融資／融券｜每日增減</div><button onclick="loadMargin()">重新讀取</button></div><div class="quotes" style="margin-top:12px"><div class="quote"><div class="small">融資增減（交易單位）</div><div class="metric" id="marginUnits">—</div></div><div class="quote"><div class="small">融券增減（交易單位）</div><div class="metric" id="shortUnits">—</div></div></div><div class="small" id="marginDate">尚未取得</div><details><summary>展開融資融券歷史紀錄</summary><div class="tablebox"><table><thead><tr><th>日期</th><th>融資增減</th><th>融券增減</th></tr></thead><tbody id="marginHistory"></tbody></table></div></details></div>
 <div class="panel"><div class="between"><div class="title">台指期 TX｜官方日盤</div><button onclick="loadTaifex()">重新讀取</button></div><div class="small" id="txSourceStatus">尚未取得</div><details><summary>展開 TX 日盤歷史紀錄</summary><div class="tablebox"><table><thead><tr><th>日期</th><th>合約</th><th>開</th><th>高</th><th>低</th><th>最後成交</th><th>成交量</th></tr></thead><tbody id="txHistoryRows"></tbody></table></div></details></div>
 </section>
@@ -60,12 +67,21 @@ function indicators(data){
 function chartK(data){
  const root=$('candleChart');clear(root);
  if(!data.length){text(root,500,180,'官方開高低收資料尚未取得','middle');return}
- const bars=data.slice(-windowCount),L=65,R=960,T=20,B=335;
+ const bars=data.slice(-windowCount),L=65,R=960,T=48,B=335;
  const nums=bars.flatMap(r=>[r.high,r.low,...[20,60,240].map(n=>r['ma'+n]).filter(Number.isFinite)]);
  let min=Math.min(...nums),max=Math.max(...nums),pad=(max-min)*.08||10;min-=pad;max+=pad;
  const y=v=>B-(v-min)/(max-min)*(B-T),x=i=>L+(i+.5)*(R-L)/bars.length,w=Math.max(2,(R-L)/bars.length*.65);
  for(let t=0;t<=4;t++){const val=min+(max-min)*t/4,Y=y(val);svg('line',{x1:L,y1:Y,x2:R,y2:Y,stroke:'#e9eef5'},root);text(root,L-8,Y+4,f(val,0),'end')}
- bars.forEach((r,i)=>{const X=x(i),c=r.close>=r.open?'#c83847':'#138260';svg('line',{x1:X,y1:y(r.high),x2:X,y2:y(r.low),stroke:c,'stroke-width':1.4},root);svg('rect',{x:X-w/2,y:Math.min(y(r.open),y(r.close)),width:w,height:Math.max(1,Math.abs(y(r.open)-y(r.close))),fill:c},root)});
+ bars.forEach((r,i)=>{const X=x(i),c=r.close>=r.open?'#c83847':'#138260';svg('line',{x1:X,y1:y(r.high),x2:X,y2:y(r.low),stroke:c,'stroke-width':1.4},root);svg('rect',{x:X-w/2,y:Math.min(y(r.open),y(r.close)),width:w,height:Math.max(1,Math.abs(y(r.open)-y(r.close))),fill:c},root);
+ const fullIndex=data.length-bars.length+i,prev=data[fullIndex-1],prev2=data[fullIndex-2];
+ let streak=0;
+ if(prev){const dir=Math.sign(r.close-prev.close);if(dir){let j=fullIndex;while(j>0&&Math.sign(data[j].close-data[j-1].close)===dir){streak++;j--}if(streak>=2){text(root,X,Math.max(13,y(r.high)-17),String(streak), 'middle',dir>0?'#c83847':'#138260',Math.max(9,Math.min(12,w*.7)))}}}
+ if(Number.isFinite(r.ma20)&&prev&&Number.isFinite(prev.ma20)&&prev2&&Number.isFinite(prev2.ma20)){
+ const before=Math.sign(prev.ma20-prev2.ma20),now=Math.sign(r.ma20-prev.ma20);
+ if(before<=0&&now>0)text(root,X,Math.max(10,y(r.high)-31),'月↑','middle','#b87511',11);
+ if(before>=0&&now<0)text(root,X,Math.max(10,y(r.high)-31),'月↓','middle','#7751a4',11);
+ }
+});
  for(const [n,c] of [[20,'#2c73cb'],[60,'#d49a2b'],[240,'#935fba']]){
   let points=[];
   function flush(){if(points.length>1)svg('polyline',{points:points.join(' '),fill:'none',stroke:c,'stroke-width':2},root);points=[]}
@@ -79,6 +95,8 @@ function chartKD(data){
  if(!data.length){text(root,500,110,'官方資料尚未取得','middle');$('kdLatest').textContent='尚無資料';return}
  const bars=data.slice(-windowCount),L=65,R=960,T=12,B=190;
  const x=i=>L+(i+.5)*(R-L)/bars.length,y=v=>B-v/100*(B-T);
+ svg('rect',{x:L,y:y(100),width:R-L,height:y(80)-y(100),fill:'#fff0f2'},root);
+ svg('rect',{x:L,y:y(20),width:R-L,height:y(0)-y(20),fill:'#eaf4ff'},root);
  for(const level of [0,20,50,80,100]){const Y=y(level);svg('line',{x1:L,y1:Y,x2:R,y2:Y,stroke:level===20||level===80?'#d4dbe6':'#edf0f5','stroke-dasharray':level===20||level===80?'5 4':'none'},root);text(root,L-10,Y+4,String(level),'end')}
  for(const [key,c] of [['k','#2c73cb'],['d','#d49a2b']]){
   let points=[];
@@ -136,11 +154,11 @@ async function loadMargin(){
   const j=await res.json(),rows=j.rows.filter(r=>r.margin_units&&r.short_units&&Number.isFinite(r.margin_units.previous)&&Number.isFinite(r.short_units.previous)).sort((a,b)=>a.date.localeCompare(b.date));
   if(!rows.length)throw Error('資料不完整');
   const last=rows.at(-1);
-  for(const [id,key] of [['marginUnits','margin_units'],['shortUnits','short_units']]){$(id).textContent=signed(last[key].previous,0);$(id).className='metric '+col(last[key].previous)}
-  $('marginDate').textContent='官方資料日期 '+last.date+'｜數值為當日增減';
+  for(const [id,key,home] of [['marginUnits','margin_units','homeMargin'],['shortUnits','short_units','homeShort']]){$(id).textContent=signed(last[key].previous,0);$(id).className='metric '+col(last[key].previous);$(home).textContent=signed(last[key].previous,0);$(home).className=col(last[key].previous)}
+  $('marginDate').textContent='官方資料日期 '+last.date+'｜數值為當日增減';$('homeMarginDate').textContent='資料日 '+last.date;
   $('marginHistory').replaceChildren();
   for(const r of rows.slice(-30).reverse()){const tr=document.createElement('tr');for(const v of [r.date,signed(r.margin_units.previous,0),signed(r.short_units.previous,0)]){const td=document.createElement('td');td.textContent=v;tr.appendChild(td)}$('marginHistory').appendChild(tr)}
- }catch(e){$('marginDate').textContent='尚無已驗證資料：'+e.message}
+ }catch(e){$('marginDate').textContent='尚無已驗證資料：'+e.message;$('homeMarginDate').textContent='融資券資料待驗證'}
 }
 async function loadTaifex(){
  try{
@@ -157,5 +175,17 @@ async function loadTaifex(){
   }
  }catch(e){$('txValue').textContent='—';$('txMove').textContent='尚無已驗證日盤';$('txSourceStatus').textContent=e.message}
 }
-fetchOfficial();loadMargin();loadTaifex();
+async function loadInstitutions(){
+ try{
+ const res=await fetch('./data/institutions.json?ts='+Date.now(),{cache:'no-store'});if(!res.ok)throw Error('官方檔案尚未產生');
+ const j=await res.json(),rows=j.rows.filter(r=>/^20\\d{2}-\\d{2}-\\d{2}$/.test(r.date)&&['foreign','trust','dealer','total'].every(k=>Number.isFinite(r[k]))).sort((a,b)=>a.date.localeCompare(b.date));
+ if(!rows.length)throw Error('尚無完整官方資料');
+ const r=rows.at(-1);
+ for(const [id,key] of [['instForeign','foreign'],['instTrust','trust'],['instDealer','dealer'],['instTotal','total']]){
+  const n=r[key]/100000000;$(id).textContent=signed(n,2);$(id).className=col(n);
+ }
+ $('instDate').textContent='資料日 '+r.date+'｜證交所 BFI82U';
+ }catch(e){$('instDate').textContent='尚未取得官方三大法人資料：'+e.message}
+}
+fetchOfficial();loadMargin();loadTaifex();loadInstitutions();
 </script></body></html>
