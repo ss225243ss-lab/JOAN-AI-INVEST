@@ -17,7 +17,7 @@
  <div class="quote"><div class="muted">融券餘額增減（交易單位）</div><div class="metric" id="shortUnits">—</div></div>
  </div>
  <div class="small muted" style="margin:10px 0" id="marginDate">尚未更新</div><div class="small muted" id="marginUpdated"></div>
- <div class="note" id="marginCaution">以今日餘額減前日餘額計算增減；官方數據可能於次交易日修正。</div>
+ <div class="note" id="marginCaution">使用證交所公布的當日增減數值；官方資料可能於次交易日修正。</div>
  <details style="margin-top:12px"><summary style="cursor:pointer;color:#286bd1">展開歷史增減紀錄</summary><div class="tablebox"><table><thead><tr><th>交易日</th><th>融資增減</th><th>融券增減</th></tr></thead><tbody id="marginHistory"><tr><td colspan="3">尚未載入</td></tr></tbody></table></div></details>
  <div class="footer"><a target="_blank" rel="noopener noreferrer" href="https://www.twse.com.tw/zh/trading/margin/mi-margn.html">查看證交所原始資料及修正說明</a></div>
  </section><div class="quotes" style="margin-bottom:15px">
@@ -140,23 +140,23 @@ async function loadMargin(){
   const valid=rows.filter(r=>/^\d{4}-\d{2}-\d{2}$/.test(r.date)&&['margin_units','short_units'].every(k=>r[k]&&Number.isFinite(r[k].current)));
   if(!valid.length)throw Error('官方資料格式不完整');
   valid.sort((a,b)=>a.date.localeCompare(b.date));
-  if(valid.length<2)throw Error('需要至少兩個交易日的官方餘額才能計算增減');
-  const last=valid[valid.length-1],previous=valid[valid.length-2];
+  if(valid.length<1)throw Error('缺少官方每日增減資料');
+  const last=valid[valid.length-1];
   const fmtN=(n,d=0)=>n.toLocaleString('zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
   function show(name,k){
-   const delta=last[k].current-previous[k].current;
+   const delta=last[k].previous;
    $(name).textContent=(delta>0?'+':'')+fmtN(delta);
    $(name).className='metric '+(delta>0?'red':delta<0?'green':'');
   }
   show('marginUnits','margin_units');
   show('shortUnits','short_units');
   $('marginDate').textContent='資料日期 '+last.date;
-  $('marginUpdated').textContent='與 '+previous.date+' 官方餘額比較｜累計 '+valid.length+' 日';
+  $('marginUpdated').textContent='直接使用證交所公布的當日增減欄位｜累計 '+valid.length+' 日';
   $('marginHistory').replaceChildren();
-  for(let i=valid.length-1;i>=Math.max(1,valid.length-30);i--){
-    const r=valid[i],prior=valid[i-1];
+  for(let i=valid.length-1;i>=Math.max(0,valid.length-30);i--){
+    const r=valid[i];
     const tr=document.createElement('tr');
-    const fields=[r.date,(r.margin_units.current-prior.margin_units.current>0?'+':'')+fmtN(r.margin_units.current-r.margin_units.previous),(r.short_units.current-prior.short_units.current>0?'+':'')+fmtN(r.short_units.current-r.short_units.previous)];
+    const fields=[r.date,(r.margin_units.previous>0?'+':'')+fmtN(r.margin_units.current-r.margin_units.previous),(r.short_units.previous>0?'+':'')+fmtN(r.short_units.current-r.short_units.previous)];
     for(const val of fields){const td=document.createElement('td');td.textContent=val;tr.appendChild(td)}
     $('marginHistory').appendChild(tr);
   }
