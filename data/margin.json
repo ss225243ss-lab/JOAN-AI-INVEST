@@ -1,0 +1,98 @@
+{
+  "source": "TWSE MI_MARGN official credit trading statistics",
+  "source_url": "https://www.twse.com.tw/zh/trading/margin/mi-margn.html",
+  "generated_at": "2026-10-28T14:55:22.787549+00:00",
+  "note": "今日餘額可能修正；次交易日的前日餘額為官方建議優先參考欄位。融資金額單位為新臺幣仟元。",
+  "rows": [
+    {
+      "date": "2026-10-19",
+      "margin_units": {
+        "previous": 8336,
+        "current": 9538574
+      },
+      "short_units": {
+        "previous": 17105,
+        "current": 233602
+      },
+      "margin_amount_thousand_twd": {
+        "previous": 707506,
+        "current": 645594048
+      }
+    },
+    {
+      "date": "2026-10-20",
+      "margin_units": {
+        "previous": 5418,
+        "current": 9592706
+      },
+      "short_units": {
+        "previous": 12123,
+        "current": 201911
+      },
+      "margin_amount_thousand_twd": {
+        "previous": 499372,
+        "current": 640617928
+      }
+    },
+    {
+      "date": "2026-10-21",
+      "margin_units": {
+        "previous": 5144,
+        "current": 9600626
+      },
+      "short_units": {
+        "previous": 770,
+        "current": 215912
+      },
+      "margin_amount_thousand_twd": {
+        "previous": 374767,
+        "current": 638100111
+      }
+    },
+    {
+      "date": "2026-10-22",
+      "margin_units": {
+        "previous": 15043,
+        "current": 9632327
+      },
+      "short_units": {
+        "previous": 761,
+        "current": 192598
+      },
+      "margin_amount_thousand_twd": {
+        "previous": 2443373,
+        "current": 644373624
+      }
+    },
+    {
+      "date": "2026-10-27",
+      "margin_units": {
+        "previous": 6461,
+        "current": 9604399
+      },
+      "short_units": {
+        "previous": 7228,
+        "current": 216539
+      },
+      "margin_amount_thousand_twd": {
+        "previous": 792111,
+        "current": 633880174
+      }
+    },
+    {
+      "date": "2026-10-28",
+      "margin_units": {
+        "previous": 25424,
+        "current": 9550611
+      },
+      "short_units": {
+        "previous": 17023,
+        "current": 217708
+      },
+      "margin_amount_thousand_twd": {
+        "previous": 955546,
+        "current": 623386833
+      }
+    }
+  ]
+}
