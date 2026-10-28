@@ -1,6 +1,10 @@
 name: Update official TWSE margin statistics
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/update_margin.py'
+      - '.github/workflows/update-margin.yml'
   schedule:
     - cron: '15 13 * * 1-5'
 permissions:
