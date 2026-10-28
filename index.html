@@ -7,7 +7,7 @@
 </div>
 <div class="note" id="txNotice">僅顯示日盤官方資料；不同到期月份不自動拼接成未註明的連續合約。</div>
 <div class="small muted" id="txSourceStatus">尚未取得官方行情檔</div>
-<div class="tablebox" style="margin-top:12px"><table><thead><tr><th>日期</th><th>合約月份</th><th>開盤</th><th>最高</th><th>最低</th><th>最後成交</th><th>成交量</th><th>未平倉</th></tr></thead><tbody id="txHistoryRows"><tr><td colspan="8">等待官方資料</td></tr></tbody></table></div>
+<details style="margin-top:12px"><summary style="cursor:pointer;color:#286bd1">展開 TX 日盤歷史紀錄</summary><div class="tablebox"><table><thead><tr><th>日期</th><th>合約月份</th><th>開盤</th><th>最高</th><th>最低</th><th>最後成交</th><th>成交量</th><th>未平倉</th></tr></thead><tbody id="txHistoryRows"><tr><td colspan="8">等待官方資料</td></tr></tbody></table></div></details>
 <div class="footer">資料來源：<a href="https://openapi.taifex.com.tw/" target="_blank" rel="noopener noreferrer">臺灣期貨交易所 OpenAPI</a>，資料以原始到期月份保存，首頁只呈現日盤。</div>
 </section><section class="panel" id="marginPanel">
  <div class="row between"><div><div class="title">融資／融券｜每日增減</div><div class="muted">上市市場｜只看每日增減｜官方收盤資料</div></div>
@@ -18,7 +18,7 @@
  </div>
  <div class="small muted" style="margin:10px 0" id="marginDate">尚未更新</div><div class="small muted" id="marginUpdated"></div>
  <div class="note" id="marginCaution">以今日餘額減前日餘額計算增減；官方數據可能於次交易日修正。</div>
- <div class="tablebox"><table><thead><tr><th>交易日</th><th>融資增減</th><th>融券增減</th></tr></thead><tbody id="marginHistory"><tr><td colspan="3">尚未載入</td></tr></tbody></table></div>
+ <details style="margin-top:12px"><summary style="cursor:pointer;color:#286bd1">展開歷史增減紀錄</summary><div class="tablebox"><table><thead><tr><th>交易日</th><th>融資增減</th><th>融券增減</th></tr></thead><tbody id="marginHistory"><tr><td colspan="3">尚未載入</td></tr></tbody></table></div></details>
  <div class="footer"><a target="_blank" rel="noopener noreferrer" href="https://www.twse.com.tw/zh/trading/margin/mi-margn.html">查看證交所原始資料及修正說明</a></div>
  </section><div class="quotes" style="margin-bottom:15px">
 <div class="quote"><div class="muted">加權指數｜示意／官方日資料</div><div class="metric" id="taiexValue">—</div><div id="taiexMove" class="small">—</div></div>
@@ -137,24 +137,26 @@ async function loadMargin(){
   const data=await res.json();
   const rows=data.rows;
   if(!Array.isArray(rows)||rows.length===0)throw Error('官方資料為空');
-  const valid=rows.filter(r=>/^\d{4}-\d{2}-\d{2}$/.test(r.date)&&['margin_units','short_units'].every(k=>r[k]&&Number.isFinite(r[k].current)&&Number.isFinite(r[k].previous)));
+  const valid=rows.filter(r=>/^\d{4}-\d{2}-\d{2}$/.test(r.date)&&['margin_units','short_units'].every(k=>r[k]&&Number.isFinite(r[k].current)));
   if(!valid.length)throw Error('官方資料格式不完整');
   valid.sort((a,b)=>a.date.localeCompare(b.date));
-  const last=valid[valid.length-1];
+  if(valid.length<2)throw Error('需要至少兩個交易日的官方餘額才能計算增減');
+  const last=valid[valid.length-1],previous=valid[valid.length-2];
   const fmtN=(n,d=0)=>n.toLocaleString('zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
   function show(name,k){
-   const delta=last[k].current-last[k].previous;
+   const delta=last[k].current-previous[k].current;
    $(name).textContent=(delta>0?'+':'')+fmtN(delta);
    $(name).className='metric '+(delta>0?'red':delta<0?'green':'');
   }
   show('marginUnits','margin_units');
   show('shortUnits','short_units');
-  $('marginDate').textContent=last.date;
-  $('marginUpdated').textContent='官方信用交易統計｜累計 '+valid.length+' 日';
+  $('marginDate').textContent='資料日期 '+last.date;
+  $('marginUpdated').textContent='與 '+previous.date+' 官方餘額比較｜累計 '+valid.length+' 日';
   $('marginHistory').replaceChildren();
-  for(const r of valid.slice(-30).reverse()){
+  for(let i=valid.length-1;i>=Math.max(1,valid.length-30);i--){
+    const r=valid[i],prior=valid[i-1];
     const tr=document.createElement('tr');
-    const fields=[r.date,(r.margin_units.current-r.margin_units.previous>0?'+':'')+fmtN(r.margin_units.current-r.margin_units.previous),(r.short_units.current-r.short_units.previous>0?'+':'')+fmtN(r.short_units.current-r.short_units.previous)];
+    const fields=[r.date,(r.margin_units.current-prior.margin_units.current>0?'+':'')+fmtN(r.margin_units.current-r.margin_units.previous),(r.short_units.current-prior.short_units.current>0?'+':'')+fmtN(r.short_units.current-r.short_units.previous)];
     for(const val of fields){const td=document.createElement('td');td.textContent=val;tr.appendChild(td)}
     $('marginHistory').appendChild(tr);
   }
