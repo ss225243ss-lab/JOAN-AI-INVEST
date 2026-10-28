@@ -1,215 +1,161 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>JOAN AI INVEST</title><style>:root{font-family:system-ui,'Microsoft JhengHei',sans-serif;color:#182438;background:#f3f6fa}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1180px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.brand{font-size:25px;font-weight:800;letter-spacing:.5px}.muted{color:#728096;font-size:13px}.pill{background:#fff1d6;color:#865c11;padding:6px 10px;border-radius:30px;font-size:12px}nav{display:flex;gap:8px;margin:22px 0}button,select,input{font:inherit}button,select{border:1px solid #dbe3ee;background:#fff;border-radius:10px;padding:9px 13px;cursor:pointer;color:#233247}button.active{background:#2458b7;color:white;border-color:#2458b7}.panel{background:white;border:1px solid #e1e8f0;border-radius:16px;padding:18px;margin-bottom:15px;box-shadow:0 5px 20px #14274408}.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.between{justify-content:space-between}.title{font-size:19px;font-weight:750;margin:0 0 7px}.metric{font-size:27px;font-weight:750}.quotes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.quote{border:1px solid #e1e8f0;border-radius:13px;padding:15px;background:#fff}.quote .metric{margin:5px 0}.quote .muted{font-size:12px}@media(max-width:520px){.quotes{grid-template-columns:1fr}}.red{color:#d34d57}.green{color:#178b65}.blue{color:#286bd1}.small{font-size:12px}.chart{width:100%;display:block}.hidden{display:none!important}.tablebox{overflow:auto}table{border-collapse:collapse;width:100%;white-space:nowrap;font-size:13px}th,td{padding:12px 10px;border-bottom:1px solid #edf0f5;text-align:right}th:first-child,td:first-child{text-align:left}th{background:#f7f9fc;color:#59677d;position:sticky;top:0}sup{font-size:10px;margin-left:2px}input[type=file]{max-width:100%}.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.note{background:#fff7e7;border-radius:9px;padding:10px 12px;color:#805a20;font-size:12px;margin:10px 0}.legend{display:flex;gap:15px;flex-wrap:wrap;font-size:12px;color:#6a7789}.line{display:inline-block;width:15px;height:3px;vertical-align:middle;margin-right:4px}.footer{font-size:12px;color:#7a8798;margin:20px 0}@media(max-width:600px){.wrap{padding:12px}.panel{padding:13px}.brand{font-size:21px}button,select{padding:8px}.metric{font-size:23px}}</style></head><body><main class="wrap"><header class="top"><div><div class="brand">JOAN AI INVEST</div><div class="muted">個人投資研究工作台 · V0.4</div></div><span class="pill" id="status">示意資料｜可查詢官方大盤日資料</span></header><nav><button id="nav1" class="active" onclick="page(1)">① K 線技術分析</button><button id="nav2" onclick="page(2)">② 大盤歷史紀錄</button></nav><section id="page1"><div class="panel"><div class="row between"><div><b>官方資料查詢與技術事件</b><div class="muted">查詢證交所加權指數歷史收盤資料並檢查收盤均線事件；台指期尚未串接</div></div><button onclick="fetchOfficial()">更新官方大盤與均線訊號</button></div><div class="small" id="officialInfo" style="margin-top:9px">尚未查詢</div><div class="row" style="margin-top:10px"><button onclick="enableAlerts()" id="alertBtn">啟用頁面內事件提醒</button><span class="muted">只依官方已公布收盤資料；不會背景推播</span></div><div id="alertLog" class="small" style="margin-top:9px"></div><div class="small" id="eventHistory" style="margin-top:8px"></div></div><section class="panel" id="taifexPanel">
-<div class="row between"><div><div class="title">臺股期貨 TX｜期交所官方行情</div>
-<div class="muted">近月實際契約｜只顯示日盤｜非即時報價</div></div>
-<button onclick="loadTaifex()">更新台指期官方資料</button></div>
-<div class="quotes" style="margin-top:12px">
-<div class="quote"><div class="muted">TX 近月｜一般交易時段</div><div class="metric" id="txDayLast">—</div><div id="txDayDate" class="small muted">等待官方資料</div><div id="txDayDetail" class="small muted"></div></div>
-</div>
-<div class="note" id="txNotice">僅顯示日盤官方資料；不同到期月份不自動拼接成未註明的連續合約。</div>
-<div class="small muted" id="txSourceStatus">尚未取得官方行情檔</div>
-<details style="margin-top:12px"><summary style="cursor:pointer;color:#286bd1">展開 TX 日盤歷史紀錄</summary><div class="tablebox"><table><thead><tr><th>日期</th><th>合約月份</th><th>開盤</th><th>最高</th><th>最低</th><th>最後成交</th><th>成交量</th><th>未平倉</th></tr></thead><tbody id="txHistoryRows"><tr><td colspan="8">等待官方資料</td></tr></tbody></table></div></details>
-<div class="footer">資料來源：<a href="https://openapi.taifex.com.tw/" target="_blank" rel="noopener noreferrer">臺灣期貨交易所 OpenAPI</a>，資料以原始到期月份保存，首頁只呈現日盤。</div>
-</section><section class="panel" id="marginPanel">
- <div class="row between"><div><div class="title">融資／融券｜每日增減</div><div class="muted">上市市場｜只看每日增減｜官方收盤資料</div></div>
- <button onclick="loadMargin()">重新檢查資料</button></div>
- <div class="quotes" style="margin-top:12px">
- <div class="quote"><div class="muted">融資餘額增減（交易單位）</div><div class="metric" id="marginUnits">—</div></div>
- <div class="quote"><div class="muted">融券餘額增減（交易單位）</div><div class="metric" id="shortUnits">—</div></div>
- </div>
- <div class="small muted" style="margin:10px 0" id="marginDate">尚未更新</div><div class="small muted" id="marginUpdated"></div>
- <div class="note" id="marginCaution">使用證交所公布的當日增減數值；官方資料可能於次交易日修正。</div>
- <details style="margin-top:12px"><summary style="cursor:pointer;color:#286bd1">展開歷史增減紀錄</summary><div class="tablebox"><table><thead><tr><th>交易日</th><th>融資增減</th><th>融券增減</th></tr></thead><tbody id="marginHistory"><tr><td colspan="3">尚未載入</td></tr></tbody></table></div></details>
- <div class="footer"><a target="_blank" rel="noopener noreferrer" href="https://www.twse.com.tw/zh/trading/margin/mi-margn.html">查看證交所原始資料及修正說明</a></div>
- </section><div class="quotes" style="margin-bottom:15px">
-<div class="quote"><div class="muted">加權指數｜示意／官方日資料</div><div class="metric" id="taiexValue">—</div><div id="taiexMove" class="small">—</div></div>
-<div class="quote"><div class="muted">台指期｜示意日盤收盤</div><div class="metric" id="txValue">—</div><div id="txMove" class="small">—</div></div>
-</div><div class="panel"><div class="row between"><div><div class="title">市場 K 線</div><div class="muted" id="chartLabel">加權指數 · 日 K</div></div><div class="controls"><select id="market" onchange="render()"><option value="taiex">加權指數</option><option value="tx">台指期</option></select><select id="period" onchange="render()"><option value="day">日 K</option><option value="week">週 K</option><option value="month">月 K</option></select><select id="contract" onchange="render()" class="hidden"><option value="continuous">連續合約（示意）</option><option value="near">近月合約</option><option value="next">次月合約</option></select></div></div><div class="row" style="margin:12px 0"><button id="streakBtn" class="active" onclick="toggle('streak')">連漲連跌 ✓</button><button id="maBtn" class="active" onclick="toggle('ma')">均線轉向 ✓</button><button onclick="zoom(-1)">＋ 放大</button><button onclick="zoom(1)">－ 縮小</button></div><div class="note">目前圖表為演示用合成資料，不代表真實市場價格、技術指標或交易訊號。</div><svg id="candleChart" class="chart" viewBox="0 0 980 360" role="img" aria-label="K 線圖"></svg><div class="legend"><span><i class="line" style="background:#d34d57"></i>上漲</span><span><i class="line" style="background:#178b65"></i>下跌</span><span><i class="line" style="background:#377ad4"></i>短均線</span><span><i class="line" style="background:#db9a30"></i>中均線</span></div></div><div class="panel"><div class="row between"><div class="title">KD（9,3,3）</div><span class="muted">80 以上淡紅 · 20 以下淡綠</span></div><svg id="kdChart" class="chart" viewBox="0 0 980 190" role="img" aria-label="KD 指標圖"></svg><div class="legend"><span><i class="line" style="background:#3478d4"></i>K</span><span><i class="line" style="background:#d79a31"></i>D</span></div></div><div id="spreadBox" class="panel hidden"><button onclick="document.getElementById('spreadDetail').classList.toggle('hidden')">↔ 台指期跨月價差（點擊展開／收起）</button><div id="spreadDetail" class="hidden"><div class="note">以下為示意報價。尚未連接期交所或授權行情，不能視為即時報價。</div><div class="tablebox"><table><thead><tr><th>合約</th><th>示意價格</th><th>相對近月價差</th></tr></thead><tbody><tr><td>近月</td><td>28,500</td><td>—</td></tr><tr><td>次月</td><td>28,560</td><td class="red">+60</td></tr><tr><td>遠月 A</td><td>28,530</td><td class="red">+30</td></tr><tr><td>遠月 B</td><td>28,470</td><td class="green">−30</td></tr></tbody></table></div></div></div></section><section id="page2" class="hidden"><div class="panel"><div class="row between"><div><div class="title">大盤歷史紀錄</div><div class="muted">加權指數 · 成交量 · 三大法人 · MA20</div></div><button onclick="exportCSV()">匯出 CSV</button></div><div class="note">預設為示意資料。你可以匯入自己的 CSV，在本頁查看與計算連續買賣天數；資料只在目前頁面記憶體中，重新開啟會恢復示意資料。</div><div class="row"><label class="small">匯入 CSV：<input type="file" accept=".csv,text/csv" id="csvfile" onchange="importCSV(event)"></label><button onclick="resetDemo()">恢復示意資料</button></div><p class="muted">CSV 欄位：date,close,volume,foreign,trust,dealer（日期、收盤、成交量、外資、投信、自營商）。請按日期由舊到新排列；MA20 需要至少 20 筆。</p><div class="tablebox"><table><thead><tr><th>日期</th><th>收盤</th><th>漲跌點</th><th>漲跌 %</th><th>成交量</th><th>量變 %</th><th>外資</th><th>投信</th><th>自營商</th><th>MA20</th><th>方向</th></tr></thead><tbody id="historyBody"></tbody></table></div></div></section><div class="footer">JOAN AI INVEST · 本機離線展示版。加權收盤與均線事件可查詢證交所官方日資料；K 線圖、KD 與台指期仍為示意。事件提醒僅在本頁開啟且使用者啟用時運作；沒有背景排程、推播或交易下單。</div></main><script>
-const NS='http://www.w3.org/2000/svg';let state={streak:true,ma:true,window:45},history=[];const fmt=(n,d=0)=>Number.isFinite(n)?n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';const sign=n=>n>0?'+':'';const color=n=>n>0?'red':n<0?'green':'';function el(tag,attrs={},parent){let e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));parent.appendChild(e);return e}function txt(parent,x,y,t,fill='#65758c',size=12,anchor='start'){let e=el('text',{x,y,fill,'font-size':size,'text-anchor':anchor,'font-family':'system-ui'},parent);e.textContent=t;return e}
-function demo(){let a=[],v=27500;for(let i=0;i<110;i++){let date=new Date(2026,5,1+i);if(date.getDay()===0||date.getDay()===6)continue;let move=Math.sin(i*.31)*80+Math.cos(i*.11)*52+((i%9)-4)*12;let prev=v;v=Math.round(v+move);a.push({date:date.toISOString().slice(0,10),open:prev+Math.round(Math.sin(i)*25),high:Math.max(prev,v)+45+((i*7)%25),low:Math.min(prev,v)-45-((i*3)%20),close:v,volume:Math.round(3800+500*Math.sin(i*.15)+((i*47)%280)),foreign:Math.round(70*Math.sin(i*.23)),trust:Math.round(25*Math.cos(i*.19)),dealer:Math.round(15*Math.sin(i*.31))})}return a}function prepare(a){let streaks={foreign:0,trust:0,dealer:0};let previous={foreign:0,trust:0,dealer:0};a.forEach((r,i)=>{r.change=i?r.close-a[i-1].close:NaN;r.pct=i?r.change/a[i-1].close*100:NaN;r.volpct=i?(r.volume-a[i-1].volume)/a[i-1].volume*100:NaN;r.ma20=i>=19?a.slice(i-19,i+1).reduce((s,x)=>s+x.close,0)/20:NaN;r.maPrev=i>=20?a.slice(i-20,i).reduce((s,x)=>s+x.close,0)/20:NaN;r.maDir=Number.isFinite(r.maPrev)?Math.sign(r.ma20-r.maPrev):0;for(let k of ['foreign','trust','dealer']){let s=Math.sign(r[k]);streaks[k]=s===0?0:s===previous[k]?streaks[k]+1:1;previous[k]=s;r[k+'Streak']=streaks[k]}})}function page(n){document.getElementById('page1').classList.toggle('hidden',n!==1);document.getElementById('page2').classList.toggle('hidden',n!==2);document.getElementById('nav1').classList.toggle('active',n===1);document.getElementById('nav2').classList.toggle('active',n===2)}function toggle(k){state[k]=!state[k];document.getElementById(k==='streak'?'streakBtn':'maBtn').classList.toggle('active',state[k]);document.getElementById(k==='streak'?'streakBtn':'maBtn').textContent=(k==='streak'?'連漲連跌':'均線轉向')+(state[k]?' ✓':'');render()}function zoom(dir){state.window=Math.max(18,Math.min(80,state.window+dir*10));render()}function aggregate(rows,p){if(p==='day')return rows;let groups=new Map();rows.forEach(r=>{let d=new Date(r.date+'T12:00:00');let key;if(p==='month')key=r.date.slice(0,7);else{let mon=new Date(d);mon.setDate(d.getDate()-((d.getDay()+6)%7));key=mon.toISOString().slice(0,10)}if(!groups.has(key))groups.set(key,{...r});else{let g=groups.get(key);g.high=Math.max(g.high,r.high);g.low=Math.min(g.low,r.low);g.close=r.close;g.volume+=r.volume;g.date=r.date}});return [...groups.values()]}function calcMA(a,n,i){return i>=n-1?a.slice(i-n+1,i+1).reduce((s,x)=>s+x.close,0)/n:NaN}function renderQuotes(){let a=demo(),last=a[a.length-1],prev=a[a.length-2];for(let [key,offset] of [['taiex',0],['tx',15]]){let diff=last.close-prev.close,pct=diff/prev.close*100;if(key!=='taiex'||!document.getElementById('status').textContent.includes('官方日資料已查詢'))document.getElementById(key+'Value').textContent=fmt(last.close+offset);let e=document.getElementById(key+'Move');if(key!=='taiex'||!document.getElementById('status').textContent.includes('官方日資料已查詢'))e.textContent=(diff>0?'+':'')+fmt(diff)+' 點（'+(pct>0?'+':'')+fmt(pct,2)+'%）';if(key!=='taiex'||!document.getElementById('status').textContent.includes('官方日資料已查詢'))e.className='small '+color(diff)}}function render(){renderQuotes();let m=document.getElementById('market').value,p=document.getElementById('period').value,tx=m==='tx';document.getElementById('contract').classList.toggle('hidden',!tx);document.getElementById('spreadBox').classList.toggle('hidden',!tx);document.getElementById('chartLabel').textContent=(tx?'台指期（合成示意）':'加權指數（合成示意）')+' · '+({day:'日 K',week:'週 K',month:'月 K'}[p]);let src=demo().map(x=>({...x}));if(tx){let contract=document.getElementById('contract').value;let delta=contract==='next'?60:contract==='near'?0:15;src.forEach(r=>{r.open+=delta;r.high+=delta;r.low+=delta;r.close+=delta})}let all=aggregate(src,p),a=all.slice(-state.window),svg=document.getElementById('candleChart');svg.innerHTML='';let max=Math.max(...a.map(r=>r.high)),min=Math.min(...a.map(r=>r.low)),pad=(max-min)*.23||100;max+=pad;min-=pad;let y=v=>315-(v-min)/(max-min)*270;for(let j=0;j<5;j++){let v=min+(max-min)*j/4,Y=y(v);el('line',{x1:45,y1:Y,x2:962,y2:Y,stroke:'#e8edf5'},svg);txt(svg,39,Y+4,fmt(v), '#8491a4',11,'end')}let w=900/a.length;let short=p==='day'?20:p==='week'?4:3,long=p==='day'?60:p==='week'?13:12;let lines=[{n:short,c:'#3478d4'},{n:long,c:'#d79a31'}];lines.forEach(({n,c})=>{let pts=[];all.forEach((r,i)=>{if(i<all.length-a.length)return;let v=calcMA(all,n,i);if(Number.isFinite(v))pts.push(`${53+(i-(all.length-a.length)+.5)*w},${y(v)}`)});if(pts.length>1)el('polyline',{points:pts.join(' '),fill:'none',stroke:c,'stroke-width':2},svg)});let streak=0,prev=0;all.forEach((r,i)=>{let s=i?Math.sign(r.close-all[i-1].close):0;streak=s===0?0:s===prev?streak+1:1;prev=s;if(i<all.length-a.length)return;let x=53+(i-(all.length-a.length)+.5)*w,up=r.close>=r.open,c=up?'#d34d57':'#178b65';el('line',{x1:x,y1:y(r.high),x2:x,y2:y(r.low),stroke:c,'stroke-width':1.5},svg);el('rect',{x:x-Math.max(2,w*.3),y:Math.min(y(r.open),y(r.close)),width:Math.max(4,w*.6),height:Math.max(1,Math.abs(y(r.open)-y(r.close))),fill:c,rx:1},svg);let labelY=Math.max(12,y(r.high)-9);if(state.streak&&p==='day'&&streak>=3)txt(svg,x,labelY,String(streak),s>0?'#d34d57':'#178b65',11,'middle');if(state.ma){let marks=[];for(let n of [short,long]){let v=calcMA(all,n,i),old=calcMA(all,n,i-1),old2=calcMA(all,n,i-2);if(Number.isFinite(v)&&Number.isFinite(old)&&Number.isFinite(old2)){let direction=Math.sign(v-old),prior=Math.sign(old-old2);if(direction!==0&&direction!==prior)marks.push(n+(direction>0?'↑':'↓'))}}marks.forEach((mark,j)=>txt(svg,x,labelY-(state.streak&&streak>=3?15:0)-j*13,mark,'#286bd1',10,'middle'))}if((i-(all.length-a.length))%Math.max(1,Math.floor(a.length/8))===0)txt(svg,x,344,r.date.slice(5),'#8592a5',11,'middle')});renderKD(all.slice(-state.window))}function renderKD(a){let svg=document.getElementById('kdChart');svg.innerHTML='';let y=v=>160-v*1.35;el('rect',{x:45,y:y(100),width:917,height:y(80)-y(100),fill:'#d34d57','fill-opacity':.12},svg);el('rect',{x:45,y:y(20),width:917,height:y(0)-y(20),fill:'#178b65','fill-opacity':.12},svg);for(let n of [0,20,50,80,100]){el('line',{x1:45,x2:962,y1:y(n),y2:y(n),stroke:n===20||n===80?'#aab7c8':'#e4eaf2','stroke-dasharray':'4 4'},svg);txt(svg,37,y(n)+4,String(n),'#758399',11,'end')}let k=50,d=50,ks=[],ds=[];a.forEach((r,i)=>{let slice=a.slice(Math.max(0,i-8),i+1),hi=Math.max(...slice.map(x=>x.high)),lo=Math.min(...slice.map(x=>x.low)),rsv=hi===lo?50:(r.close-lo)/(hi-lo)*100;k=2*k/3+rsv/3;d=2*d/3+k/3;ks.push(k);ds.push(d)});for(let [arr,c] of [[ks,'#3478d4'],[ds,'#d79a31']]){let pts=arr.map((v,i)=>`${50+(i+.5)*905/a.length},${y(v)}`);if(pts.length>1)el('polyline',{points:pts.join(' '),fill:'none',stroke:c,'stroke-width':2.5},svg)}}function renderHistory(){prepare(history);let b=document.getElementById('historyBody');b.innerHTML='';history.slice().reverse().forEach(r=>{let tr=document.createElement('tr');let cols=[r.date,fmt(r.close),Number.isFinite(r.change)?sign(r.change)+fmt(r.change):'—',Number.isFinite(r.pct)?sign(r.pct)+fmt(r.pct,2)+'%':'—',fmt(r.volume),Number.isFinite(r.volpct)?sign(r.volpct)+fmt(r.volpct,2)+'%':'—',...['foreign','trust','dealer'].map(k=>sign(r[k])+fmt(r[k])+' <sup>'+ (r[k+'Streak']||'')+'</sup>'),fmt(r.ma20,2),Number.isFinite(r.maPrev)?r.maDir>0?'↑':r.maDir<0?'↓':'→':'—'];cols.forEach((v,i)=>{let td=document.createElement('td');if(i>=6&&i<=8){td.innerHTML=v;td.className=color(r[['foreign','trust','dealer'][i-6]])}else{td.textContent=v;if(i===2||i===3)td.className=color(r.change);if(i===10)td.className=r.maDir>0?'red':r.maDir<0?'green':''}tr.appendChild(td)});b.appendChild(tr)})}function resetDemo(){history=demo().map(({date,close,volume,foreign,trust,dealer})=>({date,close,volume,foreign,trust,dealer}));renderHistory()}function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}function exportCSV(){let headers=['date','close','volume','foreign','trust','dealer'];let csv='\ufeff'+headers.join(',')+'\n'+history.map(r=>headers.map(k=>csvCell(r[k])).join(',')).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='JOAN_market_history.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}function importCSV(event){let f=event.target.files[0];if(!f)return;let reader=new FileReader();reader.onload=()=>{try{let lines=String(reader.result).replace(/^\ufeff/,'').trim().split(/\r?\n/),head=lines.shift().split(',').map(s=>s.trim().replace(/^"|"$/g,''));let keys=['date','close','volume','foreign','trust','dealer'];if(!keys.every(k=>head.includes(k)))throw Error('缺少必要欄位');let rows=lines.map(line=>{let parts=line.split(',');let r={};head.forEach((k,i)=>r[k]=parts[i]?.trim().replace(/^"|"$/g,''));keys.slice(1).forEach(k=>r[k]=Number(r[k]));if(!/^\d{4}-\d{2}-\d{2}$/.test(r.date)||keys.slice(1).some(k=>!Number.isFinite(r[k])))throw Error('日期或數值格式不正確');return r});if(!rows.length)throw Error('沒有資料');rows.sort((a,b)=>a.date.localeCompare(b.date));history=rows;renderHistory();document.getElementById('status').textContent='已匯入本機 CSV｜非即時行情'}catch(e){alert('匯入失敗：'+e.message)}};reader.readAsText(f,'UTF-8')}
-let alertEnabled=false,officialDaily=[],officialFetched=false;
-const EVENT_KEY='joan_ma_events_v04';
-function eventStore(){try{return JSON.parse(localStorage.getItem(EVENT_KEY)||'[]')}catch(e){return []}}
-function renderEventHistory(){let events=eventStore();document.getElementById('eventHistory').textContent=events.length?'已確認事件紀錄：'+events.slice(-8).reverse().map(x=>x.date+' '+x.label).join('｜'):'尚無已確認的均線事件紀錄';}
-function enableAlerts(){alertEnabled=!alertEnabled;document.getElementById('alertBtn').textContent=alertEnabled?'關閉收盤事件提醒':'啟用收盤事件提醒';if(alertEnabled)checkSignals();else document.getElementById('alertLog').textContent='提醒已關閉';}
-function checkSignals(){
- const info=document.getElementById('alertLog');
- if(!alertEnabled){info.textContent='提醒尚未啟用';return}
- if(!officialFetched){info.textContent='請先按「更新官方大盤與均線訊號」取得真實收盤資料；不使用示意資料發送通知。';return}
- const rows=officialDaily,i=rows.length-1,last=rows[i],prev=rows[i-1];
- if(i<20){info.textContent='官方資料不足，尚不能判斷 MA20';return}
- const ma=(idx,n)=>idx>=n-1?rows.slice(idx-n+1,idx+1).reduce((a,r)=>a+r.close,0)/n:NaN;
- const events=[];
- for(const n of [20,60,240]){
-   if(i<n)continue;
-   const current=ma(i,n),prior=ma(i-1,n);
-   if(prev.close<=prior&&last.close>current)events.push('收盤站上 MA'+n);
-   if(prev.close>=prior&&last.close<current)events.push('收盤跌破 MA'+n);
-   if(i>=n+1){const before=ma(i-2,n),oldDir=Math.sign(prior-before),newDir=Math.sign(current-prior);
-     if(oldDir!==0&&newDir!==0&&oldDir!==newDir)events.push('MA'+n+' 由'+(oldDir>0?'上揚':'下彎')+'轉為'+(newDir>0?'上揚':'下彎'));
-   }
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JOAN AI INVEST｜官方大盤研究</title>
+<style>
+:root{font-family:system-ui,"Microsoft JhengHei",sans-serif;color:#172439;background:#f3f6fa}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1120px;margin:auto;padding:18px}.top,.between,.controls{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.brand{font-size:25px;font-weight:800}.muted,.small{color:#6d7c90;font-size:12px}.panel,.quote{background:white;border:1px solid #e0e7f0;border-radius:14px;padding:16px;margin:12px 0}.quotes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.quotes .quote{margin:0}.metric{font-size:29px;font-weight:750;margin:7px 0}.title{font-size:19px;font-weight:750}.red{color:#c83847}.green{color:#138260}.blue{color:#2767b4}.warn{color:#936219}.note{font-size:12px;color:#76531e;background:#fff8e8;border-radius:8px;padding:10px;margin:10px 0}button,select{border:1px solid #dce4ef;background:white;border-radius:9px;padding:9px 12px;color:#1d344d;cursor:pointer;font:inherit}button.active{background:#2866bd;color:white}.hidden{display:none!important}nav{display:flex;gap:9px;margin:18px 0}svg{width:100%;display:block}table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}th,td{text-align:right;padding:10px 9px;border-bottom:1px solid #edf1f5}th:first-child,td:first-child{text-align:left}th{background:#f7f9fc}.tablebox{overflow:auto}details{margin-top:12px}summary{cursor:pointer;color:#2767b4}.legend{display:flex;gap:15px;font-size:12px;flex-wrap:wrap}.legend span:before{content:"";display:inline-block;width:14px;height:3px;background:var(--c);vertical-align:middle;margin-right:5px}.footer{font-size:12px;color:#738094;margin:22px 0}@media(max-width:550px){.wrap{padding:10px}.panel{padding:12px}.brand{font-size:22px}.metric{font-size:24px}button,select{padding:8px}.quotes{gap:8px}}
+</style></head><body><main class="wrap">
+<header class="top"><div><div class="brand">JOAN AI INVEST</div><div class="muted">官方收盤資料 · 個人研究工作台</div></div><span class="small" id="status">正在確認官方資料</span></header>
+<nav><button id="nav1" class="active" onclick="page(1)">① K 線技術分析</button><button id="nav2" onclick="page(2)">② 大盤歷史紀錄</button></nav>
+<section id="page1">
+<div class="panel"><div class="between"><div><div class="title">加權指數｜證交所官方日資料</div><div class="small" id="officialInfo">載入中…</div></div><button onclick="fetchOfficial()">重新讀取官方資料</button></div></div>
+<div class="quotes"><div class="quote"><div class="small">加權指數收盤</div><div class="metric" id="taiexValue">—</div><div class="small" id="taiexMove">尚未取得</div></div><div class="quote"><div class="small">台指期 TX｜日盤近月</div><div class="metric" id="txValue">—</div><div class="small" id="txMove">尚未取得</div></div></div>
+<div class="panel"><div class="between"><div class="title">加權指數 K 線</div><div class="controls"><select id="period" onchange="render()"><option value="day">日 K</option><option value="week">週 K</option><option value="month">月 K</option></select><button onclick="zoom(-1)">＋ 放大</button><button onclick="zoom(1)">－ 縮小</button></div></div>
+<div class="small" id="chartLabel">尚無官方 OHLC 資料</div><svg id="candleChart" viewBox="0 0 1000 390" aria-label="加權指數 K 線圖"></svg>
+<div class="legend"><span style="--c:#c83847">上漲</span><span style="--c:#138260">下跌</span><span style="--c:#2c73cb">MA20</span><span style="--c:#d49a2b">MA60</span><span style="--c:#935fba">MA240</span></div></div>
+<div class="panel"><div class="between"><div class="title">KD（9,3,3）</div><div class="small" id="kdLatest">等待計算</div></div><svg id="kdChart" viewBox="0 0 1000 220" aria-label="KD 指標圖"></svg><div class="legend"><span style="--c:#2c73cb">K</span><span style="--c:#d49a2b">D</span></div></div>
+<div class="panel"><div class="between"><div class="title">融資／融券｜每日增減</div><button onclick="loadMargin()">重新讀取</button></div><div class="quotes" style="margin-top:12px"><div class="quote"><div class="small">融資增減（交易單位）</div><div class="metric" id="marginUnits">—</div></div><div class="quote"><div class="small">融券增減（交易單位）</div><div class="metric" id="shortUnits">—</div></div></div><div class="small" id="marginDate">尚未取得</div><details><summary>展開融資融券歷史紀錄</summary><div class="tablebox"><table><thead><tr><th>日期</th><th>融資增減</th><th>融券增減</th></tr></thead><tbody id="marginHistory"></tbody></table></div></details></div>
+<div class="panel"><div class="between"><div class="title">台指期 TX｜官方日盤</div><button onclick="loadTaifex()">重新讀取</button></div><div class="small" id="txSourceStatus">尚未取得</div><details><summary>展開 TX 日盤歷史紀錄</summary><div class="tablebox"><table><thead><tr><th>日期</th><th>合約</th><th>開</th><th>高</th><th>低</th><th>最後成交</th><th>成交量</th></tr></thead><tbody id="txHistoryRows"></tbody></table></div></details></div>
+</section>
+<section id="page2" class="hidden"><div class="panel"><div class="between"><div><div class="title">加權指數｜官方歷史紀錄</div><div class="small" id="historyStatus">載入中…</div></div><button onclick="exportCSV()">匯出完整 CSV</button></div>
+<div class="small">依官方開高低收及成交量計算；沒有來源的三大法人資料不會填入假數字。</div>
+<div class="tablebox"><table><thead><tr><th>日期</th><th>開盤</th><th>最高</th><th>最低</th><th>收盤</th><th>漲跌點</th><th>漲跌%</th><th>成交量(股)</th><th>MA20</th><th>MA60</th><th>MA240</th><th>K</th><th>D</th></tr></thead><tbody id="historyBody"><tr><td colspan="13">等待官方資料</td></tr></tbody></table></div></div></section>
+<div class="footer">來源：臺灣證券交易所 MI_5MINS_HIST（開高低收）及 FMTQIK（成交量），臺灣期貨交易所 DailyMarketReportFut（日盤）。所有數據均為已公布的歷史行情，非即時報價。歷史資料若缺漏，均線及 KD 不補假值。</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const NS='http://www.w3.org/2000/svg';
+let daily=[],period='day',windowCount=55,series=[];
+const f=(v,n=2)=>Number.isFinite(v)?v.toLocaleString('zh-TW',{maximumFractionDigits:n,minimumFractionDigits:n}):'—';
+const signed=(v,n=2)=>Number.isFinite(v)?(v>0?'+':'')+f(v,n):'—';
+const col=v=>v>0?'red':v<0?'green':'';
+function page(n){$('page1').classList.toggle('hidden',n!==1);$('page2').classList.toggle('hidden',n!==2);$('nav1').classList.toggle('active',n===1);$('nav2').classList.toggle('active',n===2)}
+function zoom(d){windowCount=Math.max(18,Math.min(130,windowCount+d*12));render()}
+function svg(tag,attrs={},parent){const e=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,v);parent.appendChild(e);return e}
+function text(parent,x,y,str,anchor='start',color='#758399',size=12){const e=svg('text',{x,y,fill:color,'font-size':size,'text-anchor':anchor,'font-family':'system-ui'},parent);e.textContent=str;return e}
+function clear(node){node.replaceChildren()}
+function aggregate(data,mode){
+ if(mode==='day')return data.map(r=>({...r}));
+ const groups=new Map();
+ for(const r of data){
+  let key=mode==='month'?r.date.slice(0,7):(()=>{const d=new Date(r.date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);return d.toISOString().slice(0,10)})();
+  if(!groups.has(key))groups.set(key,{...r});
+  else{const x=groups.get(key);x.high=Math.max(x.high,r.high);x.low=Math.min(x.low,r.low);x.close=r.close;x.volume+=r.volume;x.date=r.date}
  }
- info.textContent=last.date+'｜'+(events.length?events.join('；'):'沒有新的收盤均線事件')+'（加權指數，證交所已公布日資料）';
- const existing=eventStore(),ids=new Set(existing.map(x=>x.date+'|'+x.label));
- const added=events.filter(label=>!ids.has(last.date+'|'+label)).map(label=>({date:last.date,label}));
- if(added.length){try{localStorage.setItem(EVENT_KEY,JSON.stringify([...existing,...added].slice(-200)))}catch(e){}
- alert('JOAN AI INVEST｜加權指數收盤事件\n'+last.date+'\n'+added.map(x=>x.label).join('\n'));
- }
- renderEventHistory();
+ return [...groups.values()];
 }
-function rocToISO(v){let m=String(v).match(/^(\d{2,3})\/(\d{1,2})\/(\d{1,2})$/);if(!m)return null;return String(Number(m[1])+1911)+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0')}
+function indicators(data){
+ let k=50,d=50;
+ const sum=new Array(data.length+1).fill(0);
+ for(let i=0;i<data.length;i++){
+  const r=data[i];sum[i+1]=sum[i]+r.close;
+  for(const n of [20,60,240])r['ma'+n]=i>=n-1?(sum[i+1]-sum[i+1-n])/n:null;
+  if(i>=8){
+   const nine=data.slice(i-8,i+1),hi=Math.max(...nine.map(x=>x.high)),lo=Math.min(...nine.map(x=>x.low));
+   const rsv=hi===lo?50:(r.close-lo)/(hi-lo)*100;
+   k=(2*k+rsv)/3;d=(2*d+k)/3;r.k=k;r.d=d;
+  }else{r.k=null;r.d=null}
+ }
+ return data;
+}
+function chartK(data){
+ const root=$('candleChart');clear(root);
+ if(!data.length){text(root,500,180,'官方開高低收資料尚未取得','middle');return}
+ const bars=data.slice(-windowCount),L=65,R=960,T=20,B=335;
+ const nums=bars.flatMap(r=>[r.high,r.low,...[20,60,240].map(n=>r['ma'+n]).filter(Number.isFinite)]);
+ let min=Math.min(...nums),max=Math.max(...nums),pad=(max-min)*.08||10;min-=pad;max+=pad;
+ const y=v=>B-(v-min)/(max-min)*(B-T),x=i=>L+(i+.5)*(R-L)/bars.length,w=Math.max(2,(R-L)/bars.length*.65);
+ for(let t=0;t<=4;t++){const val=min+(max-min)*t/4,Y=y(val);svg('line',{x1:L,y1:Y,x2:R,y2:Y,stroke:'#e9eef5'},root);text(root,L-8,Y+4,f(val,0),'end')}
+ bars.forEach((r,i)=>{const X=x(i),c=r.close>=r.open?'#c83847':'#138260';svg('line',{x1:X,y1:y(r.high),x2:X,y2:y(r.low),stroke:c,'stroke-width':1.4},root);svg('rect',{x:X-w/2,y:Math.min(y(r.open),y(r.close)),width:w,height:Math.max(1,Math.abs(y(r.open)-y(r.close))),fill:c},root)});
+ for(const [n,c] of [[20,'#2c73cb'],[60,'#d49a2b'],[240,'#935fba']]){
+  let points=[];
+  function flush(){if(points.length>1)svg('polyline',{points:points.join(' '),fill:'none',stroke:c,'stroke-width':2},root);points=[]}
+  bars.forEach((r,i)=>{if(Number.isFinite(r['ma'+n]))points.push(x(i)+','+y(r['ma'+n]));else flush()});flush()
+ }
+ for(let i=0;i<bars.length;i+=Math.max(1,Math.ceil(bars.length/6)))text(root,x(i),358,bars[i].date.slice(5),'middle');
+ const last=bars.at(-1);$('chartLabel').textContent=$('period').selectedOptions[0].text+'｜'+last.date+'｜MA20 '+f(last.ma20)+'｜MA60 '+f(last.ma60)+'｜MA240 '+f(last.ma240);
+}
+function chartKD(data){
+ const root=$('kdChart');clear(root);
+ if(!data.length){text(root,500,110,'官方資料尚未取得','middle');$('kdLatest').textContent='尚無資料';return}
+ const bars=data.slice(-windowCount),L=65,R=960,T=12,B=190;
+ const x=i=>L+(i+.5)*(R-L)/bars.length,y=v=>B-v/100*(B-T);
+ for(const level of [0,20,50,80,100]){const Y=y(level);svg('line',{x1:L,y1:Y,x2:R,y2:Y,stroke:level===20||level===80?'#d4dbe6':'#edf0f5','stroke-dasharray':level===20||level===80?'5 4':'none'},root);text(root,L-10,Y+4,String(level),'end')}
+ for(const [key,c] of [['k','#2c73cb'],['d','#d49a2b']]){
+  let points=[];
+  function flush(){if(points.length>1)svg('polyline',{points:points.join(' '),fill:'none',stroke:c,'stroke-width':2},root);points=[]}
+  bars.forEach((r,i)=>{if(Number.isFinite(r[key]))points.push(x(i)+','+y(r[key]));else flush()});flush()
+ }
+ const last=bars.at(-1);$('kdLatest').textContent='K '+f(last.k)+'｜D '+f(last.d)+'｜'+last.date;
+}
+function render(){period=$('period').value;series=indicators(aggregate(daily,period));chartK(series);chartKD(series)}
+function showHistory(){
+ const tbody=$('historyBody');clear(tbody);
+ if(!daily.length){tbody.innerHTML='<tr><td colspan="13">官方歷史資料尚未建立，不能顯示模擬資料。</td></tr>';$('historyStatus').textContent='無資料';return}
+ const a=indicators(aggregate(daily,'day'));
+ $('historyStatus').textContent='已載入 '+a.length+' 個官方交易日｜最新 '+a.at(-1).date+'｜畫面顯示最近 150 日，可匯出全部';
+ for(let i=a.length-1;i>=Math.max(0,a.length-150);i--){
+  const r=a[i],p=a[i-1],diff=p?r.close-p.close:null;
+  const values=[r.date,f(r.open),f(r.high),f(r.low),f(r.close),signed(diff),signed(p?diff/p.close*100:null),f(r.volume,0),f(r.ma20),f(r.ma60),f(r.ma240),f(r.k),f(r.d)];
+  const tr=document.createElement('tr');
+  values.forEach((v,j)=>{const td=document.createElement('td');td.textContent=v;if((j===5||j===6)&&Number.isFinite(diff))td.className=col(diff);tr.appendChild(td)});
+  tbody.appendChild(tr);
+ }
+}
+function exportCSV(){
+ if(!daily.length){alert('尚未取得官方歷史資料，不能匯出');return}
+ const a=indicators(aggregate(daily,'day')),head=['date','open','high','low','close','change','change_pct','volume_shares','MA20','MA60','MA240','K9','D9'];
+ const csv=[head.join(','),...a.map((r,i)=>{const prev=a[i-1];return [r.date,r.open,r.high,r.low,r.close,prev?(r.close-prev.close).toFixed(2):'',prev?((r.close-prev.close)/prev.close*100).toFixed(4):'',r.volume,...[r.ma20,r.ma60,r.ma240,r.k,r.d].map(x=>Number.isFinite(x)?x.toFixed(4):'')].join(',')})].join('\r\n');
+ const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='JOAN_TAIEX_official_'+a.at(-1).date+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
 async function fetchOfficial(){
- const info=document.getElementById('officialInfo');info.textContent='查詢證交所歷史日資料中（最多 15 個月），請稍候…';
- const now=new Date(),months=[];
- for(let j=14;j>=0;j--){const d=new Date(now.getFullYear(),now.getMonth()-j,1);months.push(d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+'01')}
- const rows=[];let ok=0,errors=[];
- for(const month of months){
-  try{
-   const url='https://www.twse.com.tw/rwd/zh/afterTrading/FMTQIK?date='+month+'&response=json';
-   const response=await fetch(url,{mode:'cors',cache:'no-store'});
-   if(!response.ok)throw Error('HTTP '+response.status);
-   const data=await response.json();
-   if(!Array.isArray(data.data))throw Error(data.stat||'無資料');
-   for(const item of data.data){const date=rocToISO(item[0]),close=Number(String(item[4]).replace(/,/g,'')),move=Number(String(item[5]).replace(/,/g,''));if(date&&Number.isFinite(close)&&Number.isFinite(move))rows.push({date,close,move})}
-   ok++;
-  }catch(e){errors.push(month+': '+e.message)}
- }
- const unique=[...new Map(rows.map(x=>[x.date,x])).values()].sort((a,b)=>a.date.localeCompare(b.date));
- if(!unique.length){officialFetched=false;info.textContent='無法從此網頁直接取得官方資料。可能是瀏覽器跨來源限制或官方服務暫時無法連線；沒有產生任何真實行情或提醒。'+(errors[0]?'（'+errors[0]+'）':'');return}
- officialDaily=unique;officialFetched=true;
- const last=unique[unique.length-1],pct=last.close-last.move?last.move/(last.close-last.move)*100:NaN;
- document.getElementById('taiexValue').textContent=fmt(last.close,2);
- const moveEl=document.getElementById('taiexMove');moveEl.textContent=sign(last.move)+fmt(last.move,2)+' 點（'+sign(pct)+fmt(pct,2)+'%）';moveEl.className='small '+color(last.move);
- document.getElementById('status').textContent='加權官方日資料已查詢｜台指期仍為示意';
- info.textContent='證交所官方加權收盤｜'+last.date+'｜取得 '+unique.length+' 筆、'+ok+'/'+months.length+' 個月份。'+(unique.length<242?'資料不足以完整計算 MA240。':'可檢查 MA20／60／240。')+' 非即時盤中行情。';
- if(alertEnabled)checkSignals();else document.getElementById('alertLog').textContent='官方資料已更新；請按「啟用收盤事件提醒」查看當日事件。';
-}
-renderEventHistory();
-resetDemo();render();</script><script>
-/* Official-data-only mode: never display demo prices as market quotes. */
-(function(){
- const $=id=>document.getElementById(id);
- $('taiexValue').textContent='載入中';$('txValue').textContent='尚未串接';
- $('taiexMove').textContent='等待證交所官方歷史資料';$('txMove').textContent='不顯示示意價格';
- $('status').textContent='官方資料模式｜台指期尚未串接';
- document.querySelectorAll('.note').forEach(e=>{if(/示意|演示/.test(e.textContent))e.textContent='僅顯示已驗證官方資料；未串接的功能不提供模擬行情。'});
- $('candleChart').style.display='none';$('kdChart').style.display='none';
- $('chartLabel').textContent='K 線／KD：尚待串接官方 OHLC，不顯示合成 K 線';
- $('spreadBox').style.display='none';
- $('market').disabled=true;$('period').disabled=true;$('contract').disabled=true;
- $('historyBody').innerHTML='<tr><td colspan="11">官方歷史資料載入中…</td></tr>';
- $('officialInfo').textContent='讀取網站每日更新的證交所資料';
- document.querySelector('.footer').textContent='官方資料來源：TWSE；收盤資料非即時。台指期、K 線及 KD 尚未串接，均不顯示模擬數值。';
- window.render=function(){};window.renderQuotes=function(){};
- window.resetDemo=function(){alert('官方資料模式不提供示意紀錄');};
- window.fetchOfficial=async function(){
-  $('officialInfo').textContent='正在載入官方資料…';
-  try{
-   const response=await fetch('./data/taiex.json?ts='+Date.now(),{cache:'no-store'});
-   if(!response.ok)throw Error('官方資料檔尚未建立（HTTP '+response.status+'）');
-   const data=await response.json(),rows=data.rows;
-   if(!Array.isArray(rows)||rows.length<240)throw Error('歷史資料不足 240 日');
-   officialDaily=rows;officialFetched=true;
-   history=rows.map(r=>({date:r.date,close:r.close,volume:r.volume,foreign:NaN,trust:NaN,dealer:NaN}));
-   renderHistory();
-   const last=rows[rows.length-1],prev=rows[rows.length-2],diff=last.close-prev.close,pct=diff/prev.close*100;
-   $('taiexValue').textContent=fmt(last.close,2);
-   $('taiexMove').textContent=sign(diff)+fmt(diff,2)+' 點（'+sign(pct)+fmt(pct,2)+'%）｜'+last.date;
-   $('taiexMove').className='small '+color(diff);
-   $('status').textContent='TWSE 官方收盤｜資料日 '+last.date;
-   $('officialInfo').textContent='證交所官方資料 '+rows.length+' 日｜最後資料日 '+last.date+'｜更新檔建立時間 '+data.generated_at+'（UTC）';
-   if(alertEnabled)checkSignals();
-  }catch(e){
-   officialFetched=false;history=[];
-   $('taiexValue').textContent='未更新';
-   $('historyBody').innerHTML='<tr><td colspan="11">尚無可驗證官方資料，請等待自動更新完成。</td></tr>';
-   $('officialInfo').textContent='無法載入：'+e.message;
-  }
- };
- window.fetchOfficial();
-})();
-</script><script>
-async function loadMargin(){
- const $=id=>document.getElementById(id);
- $('marginDate').textContent='讀取中';
+ $('officialInfo').textContent='正在讀取官方歷史資料…';
  try{
-  const res=await fetch('./data/margin.json?t='+Date.now(),{cache:'no-store'});
-  if(!res.ok)throw Error('官方資料檔尚未產生（HTTP '+res.status+'）');
+  const res=await fetch('./data/taiex.json?ts='+Date.now(),{cache:'no-store'});
+  if(!res.ok)throw Error('官方資料檔尚未建立（HTTP '+res.status+'）');
   const data=await res.json();
   const rows=data.rows;
-  if(!Array.isArray(rows)||rows.length===0)throw Error('官方資料為空');
-  const valid=rows.filter(r=>/^\d{4}-\d{2}-\d{2}$/.test(r.date)&&['margin_units','short_units'].every(k=>r[k]&&Number.isFinite(r[k].current)));
-  if(!valid.length)throw Error('官方資料格式不完整');
-  valid.sort((a,b)=>a.date.localeCompare(b.date));
-  if(valid.length<1)throw Error('缺少官方每日增減資料');
-  const last=valid[valid.length-1];
-  const fmtN=(n,d=0)=>n.toLocaleString('zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
-  function show(name,k){
-   const delta=last[k].previous;
-   $(name).textContent=(delta>0?'+':'')+fmtN(delta);
-   $(name).className='metric '+(delta>0?'red':delta<0?'green':'');
-  }
-  show('marginUnits','margin_units');
-  show('shortUnits','short_units');
-  $('marginDate').textContent='資料日期 '+last.date;
-  $('marginUpdated').textContent='直接使用證交所公布的當日增減欄位｜累計 '+valid.length+' 日';
-  $('marginHistory').replaceChildren();
-  for(let i=valid.length-1;i>=Math.max(0,valid.length-30);i--){
-    const r=valid[i];
-    const tr=document.createElement('tr');
-    const fields=[r.date,(r.margin_units.previous>0?'+':'')+fmtN(r.margin_units.current-r.margin_units.previous),(r.short_units.previous>0?'+':'')+fmtN(r.short_units.current-r.short_units.previous)];
-    for(const val of fields){const td=document.createElement('td');td.textContent=val;tr.appendChild(td)}
-    $('marginHistory').appendChild(tr);
-  }
+  if(!Array.isArray(rows))throw Error('官方資料格式錯誤');
+  const validated=rows.filter(r=>/^20\d\d-\d\d-\d\d$/.test(r.date)&&[r.open,r.high,r.low,r.close,r.volume].every(Number.isFinite)&&r.low>0&&r.low<=Math.min(r.open,r.close)&&r.high>=Math.max(r.open,r.close)&&r.volume>=0);
+  validated.sort((a,b)=>a.date.localeCompare(b.date));
+  daily=validated.filter((r,i)=>i===0||r.date!==validated[i-1].date);
+  if(daily.length<20)throw Error('官方 OHLCV 歷史資料不足');
+  const last=daily.at(-1),prev=daily.at(-2),diff=last.close-prev.close;
+  $('taiexValue').textContent=f(last.close);$('taiexMove').textContent=signed(diff)+' 點｜'+signed(diff/prev.close*100)+'%｜'+last.date;$('taiexMove').className='small '+col(diff);
+  $('officialInfo').textContent='官方 '+daily.length+' 個交易日｜最新 '+last.date+'｜檔案更新 '+(data.generated_at||'未標示');
+  $('status').textContent='官方資料日期 '+last.date;
+  render();showHistory();
  }catch(e){
-  $('marginDate').textContent='尚未更新';
-  $('marginUpdated').textContent=e.message;
-  for(const id of ['marginUnits','shortUnits'])$(id).textContent='—';
-  $('marginHistory').innerHTML='<tr><td colspan="3">尚無已驗證官方資料，不能顯示示意數值。</td></tr>';
+  daily=[];$('taiexValue').textContent='未更新';$('taiexMove').textContent='無官方資料';
+  $('officialInfo').textContent='無法載入：'+e.message;$('status').textContent='官方資料尚未就緒';
+  render();showHistory();
  }
 }
-loadMargin();
-</script><script>
-async function loadTaifex(){
- const $=id=>document.getElementById(id),f=n=>Number.isFinite(n)?n.toLocaleString('zh-TW',{maximumFractionDigits:2}):'—';
- $('txSourceStatus').textContent='正在載入期交所資料…';
+async function loadMargin(){
  try{
-  const res=await fetch('./data/taifex_tx.json?t='+Date.now(),{cache:'no-store'});
-  if(!res.ok)throw Error('官方 TX 資料檔尚未建立（HTTP '+res.status+'）');
-  const obj=await res.json();
-  if(!Array.isArray(obj.rows))throw Error('TX 資料格式異常');
-  const valid=obj.rows.filter(r=>r.contract==='TX' && /^20\d{4}$/.test(r.month) && /^20\d{2}-\d{2}-\d{2}$/.test(r.date) && r.session==='day' && Number.isFinite(r.last) && r.last>0);
-  if(!valid.length)throw Error('沒有已驗證的 TX 合約行情');
-  valid.sort((a,b)=>a.date.localeCompare(b.date)||a.month.localeCompare(b.month));
-  const near=valid.filter(r=>r.month===valid.filter(x=>x.date===r.date&&x.session===r.session).map(x=>x.month).sort()[0]);
-  function show(session,prefix){
-   const selected=near.filter(r=>r.session===session).sort((a,b)=>a.date.localeCompare(b.date));
-   const r=selected.at(-1);
-   if(!r){$(prefix+'Last').textContent='—';$(prefix+'Date').textContent='尚無此時段官方資料';return;}
-   $(prefix+'Last').textContent=f(r.last);
-   $(prefix+'Date').textContent=r.date+'｜'+r.month+' 合約｜'+(session==='day'?'日盤':'夜盤');
-   $(prefix+'Detail').textContent='開 '+f(r.open)+'｜高 '+f(r.high)+'｜低 '+f(r.low)+'｜量 '+f(r.volume)+'｜未平倉 '+f(r.open_interest);
-  }
-  show('day','txDay');
-  const lastDay=near.filter(r=>r.session==='day').at(-1);
-  const latest=near.at(-1);
-  $('txValue').textContent=lastDay?f(lastDay.last):'—';
-  $('txMove').textContent=lastDay?'官方日盤 '+lastDay.date+'｜'+lastDay.month+'｜非即時':'尚無官方日盤';
-  $('txSourceStatus').textContent='期交所官方快照，共 '+valid.length+' 筆｜最後交易日期 '+latest.date+'｜資料建立時間 '+(obj.generated_at||'未標示');
-  $('txHistoryRows').replaceChildren();
-  for(const r of near.slice(-60).reverse()){
-   const tr=document.createElement('tr');
-   for(const v of [r.date,r.session==='day'?'日盤':'夜盤',r.month,f(r.open),f(r.high),f(r.low),f(r.last),f(r.volume),f(r.open_interest)]){
-    const td=document.createElement('td');td.textContent=v;tr.appendChild(td);
-   }
-   $('txHistoryRows').appendChild(tr);
-  }
- }catch(e){
-  $('txSourceStatus').textContent='尚未更新：'+e.message;
-  $('txValue').textContent='—';$('txMove').textContent='待取得官方台指期數據';
-  $('txDayLast').textContent='—';$('txNightLast').textContent='—';
-  $('txDayDate').textContent='尚無已驗證資料';$('txNightDate').textContent='尚無已驗證資料';
-  $('txHistoryRows').innerHTML='<tr><td colspan="8">無法取得官方 TX 日盤資料，不顯示示意行情。</td></tr>';
- }
+  const res=await fetch('./data/margin.json?ts='+Date.now(),{cache:'no-store'});if(!res.ok)throw Error('尚無檔案');
+  const j=await res.json(),rows=j.rows.filter(r=>r.margin_units&&r.short_units&&Number.isFinite(r.margin_units.previous)&&Number.isFinite(r.short_units.previous)).sort((a,b)=>a.date.localeCompare(b.date));
+  if(!rows.length)throw Error('資料不完整');
+  const last=rows.at(-1);
+  for(const [id,key] of [['marginUnits','margin_units'],['shortUnits','short_units']]){$(id).textContent=signed(last[key].previous,0);$(id).className='metric '+col(last[key].previous)}
+  $('marginDate').textContent='官方資料日期 '+last.date+'｜數值為當日增減';
+  $('marginHistory').replaceChildren();
+  for(const r of rows.slice(-30).reverse()){const tr=document.createElement('tr');for(const v of [r.date,signed(r.margin_units.previous,0),signed(r.short_units.previous,0)]){const td=document.createElement('td');td.textContent=v;tr.appendChild(td)}$('marginHistory').appendChild(tr)}
+ }catch(e){$('marginDate').textContent='尚無已驗證資料：'+e.message}
 }
-loadTaifex();
+async function loadTaifex(){
+ try{
+  const res=await fetch('./data/taifex_tx.json?ts='+Date.now(),{cache:'no-store'});if(!res.ok)throw Error('尚無檔案');
+  const j=await res.json(),all=j.rows.filter(r=>r.contract==='TX'&&r.session==='day'&&/^20\d{4}$/.test(r.month)&&Number.isFinite(r.last)).sort((a,b)=>a.date.localeCompare(b.date)||a.month.localeCompare(b.month));
+  if(!all.length)throw Error('尚無日盤資料');
+  const dates=[...new Set(all.map(r=>r.date))],nearest=all.filter(r=>r.date===dates.at(-1)).sort((a,b)=>a.month.localeCompare(b.month))[0];
+  $('txValue').textContent=f(nearest.last);$('txMove').textContent='TX '+nearest.month+'｜日盤 '+nearest.date+'｜非即時';
+  $('txSourceStatus').textContent='期交所官方｜最新 '+nearest.date+'｜近月 '+nearest.month;
+  $('txHistoryRows').replaceChildren();
+  for(const date of dates.slice(-30).reverse()){
+   const row=all.filter(r=>r.date===date).sort((a,b)=>a.month.localeCompare(b.month))[0];if(!row)continue;
+   const tr=document.createElement('tr');for(const v of [row.date,row.month,f(row.open),f(row.high),f(row.low),f(row.last),f(row.volume,0)]){const td=document.createElement('td');td.textContent=v;tr.appendChild(td)}$('txHistoryRows').appendChild(tr);
+  }
+ }catch(e){$('txValue').textContent='—';$('txMove').textContent='尚無已驗證日盤';$('txSourceStatus').textContent=e.message}
+}
+fetchOfficial();loadMargin();loadTaifex();
 </script></body></html>
