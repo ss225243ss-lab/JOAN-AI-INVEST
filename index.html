@@ -25,8 +25,8 @@
 <div class="panel"><div class="between"><div class="title">台指期 TX｜官方日盤</div><button onclick="loadTaifex()">重新讀取</button></div><div class="small" id="txSourceStatus">尚未取得</div><details><summary>展開 TX 日盤歷史紀錄</summary><div class="tablebox"><table><thead><tr><th>日期</th><th>合約</th><th>開</th><th>高</th><th>低</th><th>最後成交</th><th>成交量</th></tr></thead><tbody id="txHistoryRows"></tbody></table></div></details></div>
 </section>
 <section id="page2" class="hidden"><div class="panel"><div class="between"><div><div class="title">加權指數｜官方歷史紀錄</div><div class="small" id="historyStatus">載入中…</div></div><button onclick="exportCSV()">匯出完整 CSV</button></div>
-<div class="small">依官方開高低收及成交量計算；沒有來源的三大法人資料不會填入假數字。</div>
-<div class="tablebox"><table><thead><tr><th>日期</th><th>收盤價</th><th>漲跌點</th><th>漲跌%</th><th>月線 MA20</th><th>季線 MA60</th><th>年線 MA240</th><th>K</th><th>D</th></tr></thead><tbody id="historyBody"><tr><td colspan="9">等待官方資料</td></tr></tbody></table></div></div></section>
+<div class="small">均線僅顯示方向；法人買賣超單位為億元，括號為相較前一交易日的金額變動率（前日為零或方向反轉時不計算）。外資期貨為淨未平倉口數，尚未驗證的日期顯示「—」。</div>
+<div class="tablebox"><table><thead><tr><th>日期</th><th>收盤價</th><th>漲跌點</th><th>漲跌%</th><th>外資買賣超</th><th>投信買賣超</th><th>自營商買賣超</th><th>三大法人合計</th><th>外資期貨淨多空（口）</th><th>月線 MA20</th><th>季線 MA60</th><th>年線 MA240</th></tr></thead><tbody id="historyBody"><tr><td colspan="12">等待官方資料</td></tr></tbody></table></div></div></section>
 <div class="footer">來源：臺灣證券交易所 MI_5MINS_HIST（開高低收）及 FMTQIK（成交量），臺灣期貨交易所 DailyMarketReportFut（日盤）。所有數據均為已公布的歷史行情，非即時報價。歷史資料若缺漏，均線及 KD 不補假值。</div>
 </main>
 <script>
@@ -122,17 +122,38 @@ function render(){
  $('rangeLabel').textContent=series[start].date+' ～ '+series[end-1].date;
  chartK(series);chartKD(series);
 }
+let institutionHistory=new Map(),futuresHistory=new Map();
+async function loadHistoryFlows(){
+ try{
+  const res=await fetch('./data/institutions.json?ts='+Date.now(),{cache:'no-store'});
+  if(res.ok){const j=await res.json();institutionHistory=new Map((j.rows||[]).filter(r=>r.date).map(r=>[r.date,r]));}
+ }catch(e){console.warn('法人歷史資料尚未取得',e)}
+ try{
+  const res=await fetch('./data/foreign_futures.json?ts='+Date.now(),{cache:'no-store'});
+  if(res.ok){const j=await res.json();futuresHistory=new Map((j.rows||[]).filter(r=>r.date&&Number.isFinite(r.net_open_interest)).map(r=>[r.date,r]));}
+ }catch(e){console.warn('外資期貨資料尚未取得',e)}
+ showHistory();
+}
 function showHistory(){
  const tbody=$('historyBody');clear(tbody);
- if(!daily.length){tbody.innerHTML='<tr><td colspan="13">官方歷史資料尚未建立，不能顯示模擬資料。</td></tr>';$('historyStatus').textContent='無資料';return}
+ if(!daily.length){tbody.innerHTML='<tr><td colspan="12">官方歷史資料尚未建立，不能顯示模擬資料。</td></tr>';$('historyStatus').textContent='無資料';return}
  const a=indicators(aggregate(daily,'day'));
- $('historyStatus').textContent='已載入 '+a.length+' 個官方交易日｜最新 '+a.at(-1).date+'｜畫面顯示最近 150 日，可匯出全部';
+ $('historyStatus').textContent='已載入 '+a.length+' 個官方交易日｜最新 '+a.at(-1).date+'｜畫面顯示最近 150 日；法人資料依官方可取得日期顯示';
+ const trend=(v,pv)=>!Number.isFinite(v)||!Number.isFinite(pv)?'—':v>pv?'↑':v<pv?'↓':'→';
+ const flow=(date,key)=>{
+  const r=institutionHistory.get(date);if(!r||!Number.isFinite(r[key]))return '—';
+  const n=r[key]/1e8;
+  const prevDate=a.findIndex(x=>x.date===date);
+  const p=prevDate>0?institutionHistory.get(a[prevDate-1].date):null;
+  const rate=p&&Number.isFinite(p[key])&&p[key]!==0&&Math.sign(p[key])===Math.sign(r[key])?(r[key]-p[key])/Math.abs(p[key])*100:null;
+  return signed(n,2)+' 億'+(Number.isFinite(rate)?' ('+signed(rate,1)+'%)':'');
+ };
  for(let i=a.length-1;i>=Math.max(0,a.length-150);i--){
   const r=a[i],p=a[i-1],diff=p?r.close-p.close:null;
-  const trend=(v,pv)=>!Number.isFinite(v)?'—':f(v)+' '+(!Number.isFinite(pv)?'—':v>pv?'↑':v<pv?'↓':'→');
-  const values=[r.date,f(r.close),signed(diff),signed(p?diff/p.close*100:null),trend(r.ma20,p?.ma20),trend(r.ma60,p?.ma60),trend(r.ma240,p?.ma240),f(r.k),f(r.d)];
+  const fut=futuresHistory.get(r.date);
+  const values=[r.date,f(r.close),signed(diff),signed(p?diff/p.close*100:null),...['foreign','trust','dealer','total'].map(k=>flow(r.date,k)),fut?String(fut.net_open_interest):'—',trend(r.ma20,p?.ma20),trend(r.ma60,p?.ma60),trend(r.ma240,p?.ma240)];
   const tr=document.createElement('tr');
-  values.forEach((v,j)=>{const td=document.createElement('td');td.textContent=v;if((j===2||j===3)&&Number.isFinite(diff))td.className=col(diff);tr.appendChild(td)});
+  values.forEach((v,j)=>{const td=document.createElement('td');td.textContent=v;if((j===2||j===3)&&Number.isFinite(diff))td.className=col(diff);if(j>=9&&j<=11){td.style.fontWeight='bold';td.style.color=v==='↑'?'#c83847':v==='↓'?'#138260':'#66798e'}tr.appendChild(td)});
   tbody.appendChild(tr);
  }
 }
@@ -225,5 +246,5 @@ $('wheelZone').addEventListener('wheel',function(event){
  render();
 },{passive:false});
 
-fetchOfficial();loadMargin();loadTaifex();loadInstitutions();
+fetchOfficial();loadMargin();loadTaifex();loadInstitutions();loadHistoryFlows();
 </script></body></html>
