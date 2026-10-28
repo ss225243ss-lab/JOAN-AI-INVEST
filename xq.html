@@ -1,0 +1,35 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>XQ 匯入｜JOAN AI INVEST</title><style>body{font-family:system-ui,"Microsoft JhengHei",sans-serif;background:#f3f6fa;color:#1b2d45;margin:0}.wrap{max-width:1050px;margin:auto;padding:18px}.card{background:white;border:1px solid #e1e7ef;border-radius:14px;padding:18px;margin:14px 0}h1{font-size:24px}h2{font-size:19px}p,li{line-height:1.6}.muted{color:#66798e;font-size:13px}input,button{font:inherit;padding:10px;border-radius:9px;border:1px solid #cad5e3}button{background:#2869bc;color:white;cursor:pointer}a{color:#2869bc}.table{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border-bottom:1px solid #e7edf4;padding:9px;text-align:left;white-space:nowrap}th{background:#f7f9fc}.warn{background:#fff7e7;padding:10px;border-radius:9px;color:#79521d}.ok{color:#16805b}.bad{color:#b43c47}</style></head><body><main class="wrap"><a href="./index.html">← 返回 JOAN AI INVEST</a><h1>XQ 全球贏家｜選股資料匯入</h1><div class="card"><h2>第一階段：XQ CSV → JOAN</h2><p>在 XQ「選股中心」執行策略後，按「匯出」取得 CSV，再在這裡選取檔案。支援常見中文欄名，保留所有原始欄位，不會把選股結果冒充即時行情。</p><p class="warn">資料只在目前瀏覽器記憶體中解析，不會上傳到 GitHub 或伺服器；重新整理頁面後會清除。請勿匯入帳號密碼、身分證號或完整交易帳戶明細。</p><input type="file" id="file" accept=".csv,text/csv"><button id="read" type="button">讀取 XQ CSV</button><p class="muted" id="state">尚未匯入檔案</p></div><div class="card"><h2>選股結果</h2><p class="muted" id="info">匯入後會顯示欄位與股票資料。</p><label>搜尋股票代號或名稱 <input id="search" placeholder="例如 2330／台積電" oninput="render()"></label> <button onclick="download()" type="button">下載整理後 CSV</button><div class="table"><table><thead id="thead"></thead><tbody id="tbody"><tr><td>等待匯入</td></tr></tbody></table></div></div><div class="card"><h2>自動化進度</h2><p><strong>已可用：</strong>手動匯出的 XQ CSV，在 JOAN 直接讀取、搜尋、整理與下載。</p><p><strong>尚未開通：</strong>XQ 自動匯出、排程傳送、即時報價串接。XQ 官方尚未提供一般報價 API，不能假裝已經連線。</p><p class="muted">XQ 官方操作說明：<a href="https://www.xq.com.tw/learning/%E9%81%B8%E8%82%A1%E4%B8%AD%E5%BF%83%EF%BC%9A%E5%A6%82%E4%BD%95%E6%96%B0%E5%A2%9E%E4%B8%80%E5%80%8B%E9%81%B8%E8%82%A1%E7%AD%96%E7%95%A5/" target="_blank" rel="noopener">選股結果匯出 CSV</a>。</p></div></main><script>
+let headers=[],rows=[],filename='';
+function parseCSV(text){
+ text=text.replace(/^\uFEFF/,'');const out=[];let row=[],field='',quoted=false;
+ for(let i=0;i<text.length;i++){const c=text[i];if(quoted){if(c==='"'&&text[i+1]==='"'){field+='"';i++}else if(c==='"')quoted=false;else field+=c}else if(c==='"')quoted=true;else if(c===','){row.push(field);field=''}else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(field);if(row.some(x=>x.trim()))out.push(row);row=[];field=''}else field+=c}
+ if(quoted)throw Error('CSV 引號未關閉');row.push(field);if(row.some(x=>x.trim()))out.push(row);return out;
+}
+async function read(){
+ const file=document.getElementById('file').files[0];if(!file){alert('請先選擇 XQ 匯出的 CSV');return}
+ if(file.size>8*1024*1024){alert('檔案超過 8MB，請縮小匯出範圍');return}
+ try{const bytes=await file.arrayBuffer();let decoded=new TextDecoder('utf-8',{fatal:true});let text;try{text=decoded.decode(bytes)}catch(e){text=new TextDecoder('big5').decode(bytes)}
+ const parsed=parseCSV(text);if(parsed.length<2)throw Error('CSV 沒有可用資料列');
+ headers=parsed[0].map((x,i)=>x.trim()||'欄位'+(i+1));rows=parsed.slice(1).map(r=>headers.map((_,i)=>r[i]||''));filename=file.name;
+ document.getElementById('state').textContent='已讀取 '+filename+'（僅本機）';document.getElementById('state').className='ok';
+ render()
+ }catch(e){document.getElementById('state').textContent='讀取失敗：'+e.message;document.getElementById('state').className='bad'}
+}
+function render(){
+ const thead=document.getElementById('thead'),tbody=document.getElementById('tbody');thead.replaceChildren();tbody.replaceChildren();
+ if(!headers.length)return;
+ const tr=document.createElement('tr');headers.forEach(h=>{const th=document.createElement('th');th.textContent=h;tr.appendChild(th)});thead.appendChild(tr);
+ const q=document.getElementById('search').value.trim().toLowerCase();
+ const matching=rows.filter(r=>!q||r.some(v=>v.toLowerCase().includes(q)));
+ document.getElementById('info').textContent='共 '+rows.length+' 筆，符合搜尋 '+matching.length+' 筆｜'+headers.length+' 個欄位｜來源：XQ CSV（非即時行情）｜畫面最多顯示 300 筆';
+ matching.slice(0,300).forEach(r=>{const tr=document.createElement('tr');r.forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});tbody.appendChild(tr)});
+}
+function download(){
+ if(!headers.length){alert('請先匯入 CSV');return}
+ const q=document.getElementById('search').value.trim().toLowerCase(),filtered=rows.filter(r=>!q||r.some(v=>v.toLowerCase().includes(q)));
+ const escape=v=>'"'+String(v).replace(/"/g,'""')+'"';
+ const csv=[headers,...filtered].map(r=>r.map(escape).join(',')).join('\r\n');
+ const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='JOAN_XQ_'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+document.getElementById('read').addEventListener('click',read);
+</script></body></html>
