@@ -6,7 +6,7 @@ on:
       - 'scripts/update_taiex.py'
       - '.github/workflows/update-taiex.yml'
   schedule:
-    - cron: '10 11 * * 1-5'
+    - cron: '45 9 * * 1-5'
 permissions:
   contents: write
 concurrency:
@@ -30,6 +30,11 @@ jobs:
           git add data/taiex.json
           if ! git diff --cached --quiet; then
             git commit -m "Update verified TWSE TAIEX OHLCV"
-            git pull --rebase
-            git push
+            for attempt in 1 2 3 4 5; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then break; fi
+              if [ "$attempt" = 5 ]; then exit 1; fi
+              sleep $((attempt * 2))
+            done
           fi
