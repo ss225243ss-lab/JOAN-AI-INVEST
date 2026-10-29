@@ -1,7 +1,7 @@
 {
   "source": "TWSE MI_MARGN official credit trading statistics",
   "source_url": "https://www.twse.com.tw/zh/trading/margin/mi-margn.html",
-  "generated_at": "2026-10-28T14:55:22.787549+00:00",
+  "generated_at": "2026-10-29T14:15:16.652371+00:00",
   "note": "今日餘額可能修正；次交易日的前日餘額為官方建議優先參考欄位。融資金額單位為新臺幣仟元。",
   "rows": [
     {
@@ -92,6 +92,21 @@
       "margin_amount_thousand_twd": {
         "previous": 955546,
         "current": 623386833
+      }
+    },
+    {
+      "date": "2026-10-29",
+      "margin_units": {
+        "previous": 3623,
+        "current": 9550908
+      },
+      "short_units": {
+        "previous": 3565,
+        "current": 193040
+      },
+      "margin_amount_thousand_twd": {
+        "previous": 568776,
+        "current": 632299552
       }
     }
   ]
