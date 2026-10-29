@@ -53,7 +53,7 @@ def main():
     old={}
     if OUT.exists():
         old={r["date"]:r for r in json.loads(OUT.read_text()).get("rows",[])}
-    for back in range(14,-1,-1):
+    for back in range(7,-1,-1):
         day=today-dt.timedelta(days=back)
         if day.weekday()>4:continue
         payload=urllib.parse.urlencode({"queryType":"1","doQuery":"1","dateaddcnt":"","queryDate":day.strftime("%Y/%m/%d")})
@@ -62,6 +62,16 @@ def main():
             with urllib.request.urlopen(req,timeout=25) as resp:html=resp.read().decode("utf-8","replace")
             item=parse_page(html,day);old[item["date"]]=item;print("OK",item)
         except Exception as exc:print("SKIP",day,exc)
+    if today.isoformat() not in old:
+        # The standard query occasionally times out; use the official day-report export endpoint.
+        try:
+            req=urllib.request.Request("https://www.taifex.com.tw/cht/3/futContractsDateExcel",headers={"User-Agent":"Mozilla/5.0","Accept-Language":"zh-TW"})
+            with urllib.request.urlopen(req,timeout=20) as resp: html=resp.read().decode("utf-8","replace")
+            # Never apply the latest displayed record to the wrong date.
+            if today.strftime("%Y/%m/%d") not in html and today.strftime("%Y-%m-%d") not in html:
+                raise ValueError("Excel page date not verified as today")
+            item=parse_page(html,today);old[item["date"]]=item;print("EXCEL FALLBACK OK",item)
+        except Exception as exc:print("EXCEL FALLBACK SKIP",exc)
     if not old:raise SystemExit("No verified TX foreign futures records; not publishing fake values")
     OUT.parent.mkdir(exist_ok=True)
     OUT.write_text(json.dumps({"source":"TAIFEX futContractsDate / TX foreign open interest","source_url":URL,"generated_at":dt.datetime.now(dt.timezone.utc).isoformat(),"rows":[old[k] for k in sorted(old)][-750:]},ensure_ascii=False,indent=2)+"\n")
