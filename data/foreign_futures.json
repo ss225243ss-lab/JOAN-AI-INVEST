@@ -50,6 +50,14 @@
       "net_open_interest": -84917,
       "long_open_interest": 10510,
       "short_open_interest": 95427
+    },
+    {
+      "date": "2026-10-29",
+      "net_open_interest": -89522,
+      "long_open_interest": 8362,
+      "short_open_interest": 97884
     }
-  ]
+  ],
+  "last_verified_source_url": "https://www.taifex.com.tw/cht/3/futContractsDateExcel",
+  "last_verified_date": "2026-10-29"
 }
