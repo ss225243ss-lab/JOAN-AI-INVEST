@@ -77,6 +77,10 @@ def main():
         time.sleep(.15)
     verified=[r for r in rows.values() if all(k in r for k in ("date","open","high","low","close","volume"))]
     verified.sort(key=lambda r:r["date"])
+    old_verified=sorted([r for r in previous.values() if all(k in r for k in ("date","open","high","low","close","volume"))],key=lambda r:r["date"])
+    if verified==old_verified:
+        print("UNCHANGED: latest verified TAIEX",verified[-1]["date"] if verified else "none",flush=True)
+        return
     if len(verified)<1:raise SystemExit("No validated OHLCV available; retain last good data")
     latest=dt.date.fromisoformat(verified[-1]["date"])
     if (now.date()-latest).days>8:print(f"WARNING: latest record {latest} is stale; publishing with explicit date",flush=True)
