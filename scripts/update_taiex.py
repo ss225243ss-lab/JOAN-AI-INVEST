@@ -42,8 +42,10 @@ def main():
             previous={r["date"]:r for r in json.loads(OUT.read_text(encoding="utf-8")).get("rows",[]) if isinstance(r,dict) and "date" in r}
         except Exception as e:print("Ignoring corrupt previous data:",e)
     rows=previous.copy()
-    # 66 calendar months provide enough daily/weekly/monthly observations for MA240 and MA60.
-    for offset in range(65,-1,-1):
+    # Backfill 66 months only on a fresh install; otherwise refresh the latest 2 months.
+    # This prevents daily runs from timing out while preserving full MA240 history.
+    months=66 if len(previous)<240 else 2
+    for offset in range(months-1,-1,-1):
         y=now.year+(now.month-1-offset)//12
         m=(now.month-1-offset)%12+1
         bars=get("TAIEX/MI_5MINS_HIST",y,m)
