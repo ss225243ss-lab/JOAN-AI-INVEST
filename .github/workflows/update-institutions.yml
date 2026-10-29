@@ -6,7 +6,7 @@ on:
       - 'scripts/update_institutions.py'
       - '.github/workflows/update-institutions.yml'
   schedule:
-    - cron: '35 12 * * 1-5'
+    - cron: '5 10 * * 1-5'
 permissions:
   contents: write
 jobs:
