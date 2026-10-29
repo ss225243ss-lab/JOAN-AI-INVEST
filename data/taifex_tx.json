@@ -1,7 +1,7 @@
 {
   "source": "TAIFEX official OpenAPI DailyMarketReportFut",
   "source_url": "https://openapi.taifex.com.tw/v1/DailyMarketReportFut",
-  "generated_at": "2026-10-29T10:12:42.504583+00:00",
+  "generated_at": "2026-10-29T23:09:57.320249+00:00",
   "contract_policy": "Actual YYYYMM contract; no silent back-adjustment/roll",
   "session_policy": "Day=08:45-13:45; night=15:00-next day 05:00, exchange trading-date attribution",
   "history_policy": "Accumulate only validated published daily snapshots; no artificial backfill",
