@@ -38,7 +38,7 @@ def official_html_final(date):
     found={}
     for r in parser.rows:
         if len(r)<4:continue
-        name=re.sub(r"\\s+","",r[0])
+        name=re.sub(r"\s+","",r[0])
         try:amount=val(r[3])
         except ValueError:continue
         if "外資及陸資" in name:found["foreign"]=amount
