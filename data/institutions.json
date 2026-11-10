@@ -2,7 +2,7 @@
   "source": "TWSE BFI82U",
   "source_url": "https://www.twse.com.tw/zh/trading/foreign/bfi82u.html",
   "unit": "TWD",
-  "generated_at": "2026-11-09T10:58:43.244569+00:00",
+  "generated_at": "2026-11-10T10:54:44.467290+00:00",
   "rows": [
     {
       "date": "2026-10-20",
@@ -125,11 +125,21 @@
       "date": "2026-11-09",
       "dealer_self": -6381659496,
       "dealer_hedge": -24836908432,
-      "trust": 26748537053,
+      "trust": 31311844079,
       "foreign": -90056371911,
       "verified_html": true,
       "dealer": -31218567928,
-      "total": -94526402786
+      "total": -89963095760
+    },
+    {
+      "date": "2026-11-10",
+      "dealer_self": -5539126345,
+      "dealer_hedge": -11996867441,
+      "trust": 36829349217,
+      "foreign": -34116689906,
+      "verified_html": true,
+      "dealer": -17535993786,
+      "total": -14823334475
     }
   ]
 }
