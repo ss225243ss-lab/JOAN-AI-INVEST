@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>黃老師轉折 K 線｜JOAN AI INVEST</title>
+<style>
+:root{font-family:system-ui,"Microsoft JhengHei",sans-serif;color:#172439;background:#f3f6fa}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1080px;margin:auto;padding:16px}.panel{background:white;border:1px solid #dfe6ef;border-radius:14px;padding:16px;margin:12px 0}.top,.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.muted{color:#69798b;font-size:13px}.tag{border-radius:30px;background:#edf4ff;padding:5px 9px;font-size:12px}.title{font-size:22px;font-weight:800}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}.item{background:#f7f9fc;border-radius:10px;padding:12px}.item b{display:block;margin-bottom:6px}.item p{font-size:13px;margin:6px 0;color:#47566a;line-height:1.6}.red{color:#bd3450}.green{color:#138260}.warning{color:#98641a}textarea{width:100%;min-height:128px;resize:vertical;font:12px/1.6 monospace;border:1px solid #cbd6e5;border-radius:9px;padding:10px}button,input{font:inherit}button{cursor:pointer;padding:9px 13px;border:1px solid #cbd6e5;border-radius:9px;background:#edf4ff}a{color:#205caa}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid #edf1f5;text-align:left;padding:9px}.scroll{overflow:auto}.hint{border-left:3px solid #d49a2b;background:#fff9e9;padding:10px;font-size:13px;line-height:1.6}.status{font-size:13px;line-height:1.7}code{font-size:12px}@media(max-width:540px){.wrap{padding:9px}.panel{padding:12px}}
+</style></head><body><main class="wrap">
+<div class="top"><div><div class="title">黃老師｜轉折 K 線研究</div><div class="muted">JOAN AI INVEST · 獨立策略模組 V1.0</div></div><a href="./index.html">← 返回首頁</a></div>
+<div class="hint">研究與訊號辨識工具，非交易建議。不自動下單、不連接券商。只用已完成 K 棒；無法定義的教材條件列為人工確認，並非保證預測。</div>
+<section class="panel"><div class="row"><h3>① 教材型態庫：低檔 7 種／高檔 8 種</h3><span class="tag">2026.10.31 補充資料</span></div>
+<div class="grid" id="catalog"></div></section>
+<section class="panel"><h3>② 匯入日 K 歷史資料（TX 或 TMF）</h3>
+<p class="muted">請使用<strong>同一月份合約</strong>、相同日盤口徑的已完成 K 棒資料。欄位：date,open,high,low,close,volume。此版本不會自行拼接不同期貨月份，也不讀取盤中未完成 K 棒。</p>
+<div class="row"><label>選擇 CSV：<input type="file" id="file" accept=".csv,text/csv"></label><button id="run">分析貼上資料</button></div>
+<textarea id="csv" placeholder="date,open,high,low,close,volume&#10;YYYY-MM-DD,開盤,最高,最低,收盤,成交量"></textarea>
+<div id="state" class="status muted">尚未匯入資料。沒有資料時不會輸出多空訊號。</div></section>
+<section class="panel"><h3>③ 最新已完成日 K 與候選訊號</h3><div id="summary" class="muted">等待有效資料</div><div id="signals" class="grid"></div></section>
+<section class="panel"><h3>④ 回測研究設定</h3>
+<p class="muted">當沖策略：日 K 型態只作偏向與風險提示；15 分與 5 分 K 尚需獨立可靠資料才能觸發交易。短波段策略：候選型態須等次日或第三日完成確認，不能回填當天已知訊號。</p>
+<div class="scroll"><table><thead><tr><th>項目</th><th>目前狀態</th></tr></thead><tbody>
+<tr><td>MA6、MA13</td><td>有足夠已完成日 K 可計算</td></tr>
+<tr><td>低檔陽包陰／紅三兵／出日 K</td><td>量化候選偵測</td></tr>
+<tr><td>高檔流星／烏雲蔽日／母子線</td><td>量化候選偵測</td></tr>
+<tr><td>其餘教材型態</td><td>保留人工判讀，不偽造訊號</td></tr>
+<tr><td>15 分／5 分觸發、歷史勝率</td><td>尚未開通，需要合格歷史資料</td></tr>
+<tr><td>券商交易</td><td>停用</td></tr>
+</tbody></table></div></section>
+<div class="muted">資料來源：黃揚政《期海淘金：補充資料 轉折K線》9 頁。此模組屬教材規則工程化的初步版本；「高檔／低檔」、均線斜率走緩、背離等主觀條件尚需另定規則並做樣本外回測。</div>
+</main><script>
+'use strict';
+const defs=[
+['低檔','一柱擎天','MA6／MA13 死亡交叉後，MA6 斜率走緩，低檔陽包陰並出現長紅 K。','人工確認：長紅、低檔與斜率走緩門檻'],
+['低檔','母子 K 線','下跌創低與背離後，第三日或三日內突破母 K 高點，最好站上 MA6。','人工確認：背離；需要三日驗證'],
+['低檔','喜鵲 K 線','下跌波的長下影轉折；次日突破 MA6 確認。','人工確認：下影長度門檻'],
+['低檔','島狀反轉','下跌中跳空下殺後，次日反向跳空上升，並以 MA6 突破確認。','人工確認：缺口是否未回補'],
+['低檔','出日 K 線','當日收盤突破前一陰 K 開盤價，並觀察能否突破 MA6。','量化候選'],
+['低檔','低檔吊勾線','下跌及負乖離時出現吊勾型態，次日須有陽 K 確認。','人工確認：下跌情境與吊勾標準'],
+['低檔','低檔紅三兵','連續三根陽 K，觀察 MA6／MA13 是否轉強。','量化候選'],
+['高檔','流星 K 線','上影線為陰 K 實體至少兩倍、近三日大量；三日內觀察是否被陽 K 化解。','量化候選，尚未驗證高檔位置'],
+['高檔','母子 K 線','高檔大量長 K，次日收低整理，第三日看能否收上母 K 頂端。','量化候選，須等待第三日'],
+['高檔','烏鴉腳 K 線','高檔疑似出貨，搭配大量及跌破 MA6／MA13 確認。','人工確認：烏鴉腳形態定義'],
+['高檔','黑方島狀反轉','漲後向上跳空出陰 K，隔日向下跳空。','人工確認：缺口與上下文'],
+['高檔','烏雲蔽日線','高開走低，陰 K 收盤跌破前一陽 K 開盤價；跌破 MA6 加強確認。','量化候選'],
+['高檔','墓碑 K 線','高檔墓碑形態，配合 MA6／MA13 研判。','人工確認：形態與高檔定義'],
+['高檔','飛機 K 線','炸板後收回漲停，次日陰 K；若次日收在當日開盤價上方可化解。','人工確認：期貨與股票漲停制度不同'],
+['高檔','誘多的陽包陰','大量陽 K 吞沒前日陰 K，次日卻收黑。','量化候選，需隔日完成']
+];
+const el=id=>document.getElementById(id);
+el('catalog').innerHTML=defs.map(([side,name,desc,mode])=>'<div class="item"><span class="'+(side==='低檔'?'red':'green')+'">'+side+'</span><b>'+name+'</b><p>'+desc+'</p><p class="muted">'+mode+'</p></div>').join('');
+function parseCSV(src){
+ const lines=src.replace(/\r/g,'').trim().split('\n').filter(Boolean);if(lines.length<2)throw Error('至少需要表頭與資料列');
+ const header=lines.shift().replace(/^\uFEFF/,'').split(',').map(v=>v.trim().toLowerCase());
+ const keys=['date','open','high','low','close','volume'];const pos=keys.map(k=>header.indexOf(k));
+ if(pos.some(i=>i<0))throw Error('CSV 必須有 date,open,high,low,close,volume 欄位');
+ const rows=lines.map((line,j)=>{const c=line.split(',');const r={date:c[pos[0]]?.trim()};for(let i=1;i<keys.length;i++)r[keys[i]]=Number(c[pos[i]]);if(!/^\d{4}-\d{2}-\d{2}$/.test(r.date)||!(r.low>0)||r.high<Math.max(r.open,r.close)||r.low>Math.min(r.open,r.close)||r.volume<0||!keys.slice(1).every(k=>Number.isFinite(r[k])))throw Error('第 '+(j+2)+' 列不符合 OHLCV 格式');return r});
+ rows.sort((a,b)=>a.date.localeCompare(b.date));if(new Set(rows.map(r=>r.date)).size!==rows.length)throw Error('重複日期，請先保證每個交易日只有一根已完成日 K');
+ return rows;
+}
+function analyze(a){
+ if(a.length<15)throw Error('至少需要 15 根已完成日 K，才能計算 MA13 與比較趨勢');
+ const n=a.length-1,t=a[n],p=a[n-1],prev2=a[n-2],ma=k=>a.slice(-k).reduce((s,x)=>s+x.close,0)/k;
+ const m6=ma(6),m13=ma(13),body=Math.abs(t.close-t.open),upper=t.high-Math.max(t.open,t.close),red=t.close>t.open,black=t.close<t.open;
+ const hot=t.volume>=Math.max(...a.slice(-3).map(x=>x.volume));
+ const results=[],add=(title,reason,extra)=>results.push({title,reason,extra:extra||'等待後續 K 棒確認；非交易指令'});
+ if(p.close<p.open && t.close>p.open)add('低檔｜出日 K 候選','收盤突破前一陰 K 開盤價'+(t.close>m6?'，且站上 MA6':'；尚未站上 MA6'));
+ if(red && p.close>p.open && prev2.close>prev2.open)add('低檔｜紅三兵候選','連續三根陽 K；仍需確認先前處於下跌波');
+ if(black && body>0 && upper>=2*body && hot)add('高檔｜流星 K 候選','長上影至少為陰 K 實體兩倍，且成交量為近三日最大');
+ if(black&&p.close>p.open&&t.open>p.close&&t.close<p.open)add('高檔｜烏雲蔽日候選','高開走低且跌破前一陽 K 開盤價'+(t.close<m6?'，收盤跌破 MA6':''));
+ if(p.close>p.open && t.close<p.close && t.high<=p.high&&t.low>=p.low)add('高檔｜母子 K 候選','母 K 範圍內收低，需等第三日是否突破母 K 高點');
+ if(n>=2 && prev2.close<prev2.open && p.close>p.open&&p.open<=prev2.close&&p.close>=prev2.open && black)add('高檔｜誘多陽包陰候選','昨日陽包陰，今日收黑；須另外確認高檔及放量');
+ el('summary').textContent='資料區間 '+a[0].date+' ～ '+t.date+'｜'+a.length+' 根日 K｜最新收盤 '+t.close+'｜MA6 '+m6.toFixed(2)+'／MA13 '+m13.toFixed(2);
+ el('signals').replaceChildren();
+ if(!results.length){el('signals').textContent='最新已完成 K 棒沒有觸發目前可量化的候選型態。其他型態仍需人工確認。';return}
+ for(const r of results){const div=document.createElement('div');div.className='item';const b=document.createElement('b');b.textContent=r.title;const p=document.createElement('p');p.textContent=r.reason;const s=document.createElement('p');s.textContent=r.extra;div.append(b,p,s);el('signals').appendChild(div)}
+}
+function run(t){try{const a=parseCSV(t);analyze(a);el('state').textContent='✅ 已完成資料格式檢查與最新一根 K 的候選訊號掃描。未進行獲利回測。'}catch(e){el('state').textContent='⚠️ '+e.message;el('summary').textContent='無有效判讀';el('signals').replaceChildren()}}
+el('run').addEventListener('click',()=>run(el('csv').value));
+el('file').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;if(f.size>3e6){el('state').textContent='檔案過大：請使用 3MB 以下 CSV';return}el('csv').value=await f.text();run(el('csv').value)});
+</script></body></html>
