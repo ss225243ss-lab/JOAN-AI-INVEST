@@ -1,7 +1,7 @@
 {
   "source": "TAIFEX futContractsDate / TX foreign open interest",
   "source_url": "https://www.taifex.com.tw/cht/3/futContractsDate",
-  "generated_at": "2026-11-26T11:09:57.091682+00:00",
+  "generated_at": "2026-11-27T11:05:02.280429+00:00",
   "rows": [
     {
       "date": "2026-10-15",
@@ -176,6 +176,12 @@
       "net_open_interest": -106275,
       "long_open_interest": 9083,
       "short_open_interest": 115358
+    },
+    {
+      "date": "2026-11-27",
+      "net_open_interest": -107503,
+      "long_open_interest": 7862,
+      "short_open_interest": 115365
     }
   ]
 }
